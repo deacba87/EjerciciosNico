@@ -1,3 +1,4 @@
+
 package com.example.login
 /* Notas
 1- En algun lado lei que kotlin me debería tomar los elementos del container directamente sin necesidad de usar el findView, pero mis muñones no logran hacerlo andar
@@ -97,5 +98,4 @@ class MainActivity : AppCompatActivity()
             Toast.makeText(this.applicationContext, "Login correcto", Toast.LENGTH_LONG)
         }
     }
-
 }
