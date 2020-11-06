@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "384601336021",
+    "firebase_url": "https://ejercio3login.firebaseio.com",
+    "project_id": "ejercio3login",
+    "storage_bucket": "ejercio3login.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:384601336021:android:fb97884420ffcdb3061a5c",
+        "android_client_info": {
+          "package_name": "com.example.login"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "384601336021-3ptd3lodbveg8s5brg67ofpqsjn0er3o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBF3APngooMIctYP_qx-GgnFuAUbQUqAEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "384601336021-3ptd3lodbveg8s5brg67ofpqsjn0er3o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
