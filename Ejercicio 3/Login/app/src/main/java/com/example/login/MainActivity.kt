@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity()
 {
     private val RC_SIGN_IN = 1
     private lateinit var mGoogleSignInClient: GoogleSignInClient
+    private var logVis = View.VISIBLE
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -48,19 +50,27 @@ class MainActivity : AppCompatActivity()
     {
         super.onStart()
 
+        val txtSaludo: TextView = findViewById(R.id.txtSaludo)
+
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
         val account = GoogleSignIn.getLastSignedInAccount(this)
         var text: String
         if (account == null)
         {
-            text = "No logueado"
+            text = "Usted no se encuentra logueado"
+            logVis = View.VISIBLE
         }
         else
         {
-            text = "Logueado"
+            text =  "Bienvenido " + account.displayName.toString()
+            logVis = View.INVISIBLE
         }
-        Toast.makeText(this.applicationContext, text, Toast.LENGTH_LONG).show()
+
+        txtSaludo.text = text
+        val layout: ConstraintLayout = findViewById(R.id.lytLog)
+        layout.visibility = logVis
+
     }
 
     fun login(view: View)
@@ -93,9 +103,11 @@ class MainActivity : AppCompatActivity()
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == RC_SIGN_IN)
         {
             Toast.makeText(this.applicationContext, "Login correcto", Toast.LENGTH_LONG)
+
         }
     }
 }
