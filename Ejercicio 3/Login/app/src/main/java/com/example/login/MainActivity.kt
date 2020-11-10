@@ -32,8 +32,9 @@ class MainActivity : AppCompatActivity()
     private lateinit var lytLog: LinearLayout
     private lateinit var txtUsuario: TextView
     private lateinit var txtPass: TextView
+    private lateinit var txtSaludo: TextView
     /**/
-    //private lateinit var auth: FirebaseAuth
+    private lateinit var auth: FirebaseAuth
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     /**/
 
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity()
         lytLog = findViewById(R.id.lytLog)
         txtUsuario = findViewById(R.id.txtUsuario)
         txtPass = findViewById(R.id.txtPass)
-
+        txtSaludo  = findViewById(R.id.txtSaludo)
         //------------------------------------------------------------------------------------------
         btnLogin.setOnClickListener(
                 View.OnClickListener { validarLogin() }
@@ -59,7 +60,10 @@ class MainActivity : AppCompatActivity()
                 View.OnClickListener { realizarLogout() }
         )
         //------------------------------------------------------------------------------------------
+        rdbGoogle.setOnClickListener(View.OnClickListener { rdbClic() })
+        rdbCorreo.setOnClickListener(View.OnClickListener { rdbClic() })
         rdbGoogle.isChecked = true
+        rdbClic()
         //------------------------------------------------------------------------------------------
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -68,67 +72,54 @@ class MainActivity : AppCompatActivity()
                 .build()
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-
         // Initialize Firebase Auth
-        /*auth = FirebaseAuth.getInstance()*/
+        auth = FirebaseAuth.getInstance()
 
     }
 
     override fun onStart()
     {
         super.onStart()
+        updateInterface()
+    }
 
-        val txtSaludo: TextView = findViewById(R.id.txtSaludo)
-
-        // Check for existing Google Sign In account, if the user is already signed in
-        // the GoogleSignInAccount will be non-null.
+    private fun isLogged(): Pair<Boolean, String>
+    {
         val account = GoogleSignIn.getLastSignedInAccount(this)
-        //val currentUser = auth.currentUser
-        var text: String
-        if (account == null /*&& currentUser == null*/)
-        {
-            text = "Usted no se encuentra logueado"
-        }
-        else
+        val user = auth.currentUser
+        var datos: String = ""
+        val logueado: Boolean = account != null || user != null
+        if (logueado)
         {
             if (account != null)
             {
-                text =  "Bienvenido " + account.displayName.toString()
+                datos = account.displayName.toString() + " - by Google"
             }
-            else
+            else if (user != null)
             {
-                text = "Bienvenido " //+ currentUser.toString()
+                datos = user.displayName.toString() + " - by Correo"
             }
-
         }
 
-        txtSaludo.text = text
-        updateInterface()
+        return Pair(logueado, datos)
     }
 
     private fun updateInterface()
     {
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        //val currentUser = auth.currentUser
-        /*if ( account == null &&
-             currentUser == null)
+        val (logueado, datos) = isLogged()
+
+        if ( !logueado )
         {
-            layout.visibility = View.VISIBLE
-            btnLogout.visibility = View.INVISIBLE
+            btnLogout.visibility = View.GONE
+            btnLogin.visibility = View.VISIBLE
+            txtSaludo.text = "Usted no se encuentra logueado"
         }
         else
         {
-            val currentUser = auth.currentUser
-            if (currentUser == null)
-            {
-
-            }
-            else
-            {
-                layout.visibility = View.INVISIBLE
-                btnLogout.visibility = View.VISIBLE
-            }
-        }*/
+            btnLogout.visibility = View.VISIBLE
+            btnLogin.visibility = View.GONE
+            txtSaludo.text = "Bienvenido " + datos
+        }
     }
 
     fun login(view: View)
@@ -164,18 +155,19 @@ class MainActivity : AppCompatActivity()
         }
         else if(rdbCorreo.isChecked)
         {
-            /*auth.signInWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
+            auth.signInWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
                     .addOnCompleteListener(this)
                     { task ->
                         if (task.isSuccessful)
                         {
                             Toast.makeText(this.applicationContext, "Ok", Toast.LENGTH_LONG)
+                            updateInterface()
                         }
                         else
                         {
                             Toast.makeText(this.applicationContext, "Error", Toast.LENGTH_LONG)
                         }
-                    }*/
+                    }
         }
     }
 
@@ -183,7 +175,7 @@ class MainActivity : AppCompatActivity()
     {
         if (rdbGoogle.isChecked)
         {
-            lytLog.visibility = View.INVISIBLE
+            lytLog.visibility = View.GONE
         }
         else if(rdbCorreo.isChecked)
         {
