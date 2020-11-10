@@ -23,6 +23,39 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/lytOpciones"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtSaludo">
+
+        <RadioGroup
+            android:id="@+id/rdgOpciones"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RadioButton
+                android:id="@+id/rdbGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Google" />
+
+            <RadioButton
+                android:id="@+id/rdbCorreo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Correo" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/lytLog"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -31,13 +64,12 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="130dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/btnLogOut"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@id/txtSaludo"
-        app:layout_constraintTop_toBottomOf="@+id/txtSaludo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lytOpciones"
         app:layout_constraintVertical_bias="0.0">
 
         <EditText
@@ -62,20 +94,36 @@
             android:textColor="#000000"
             android:textSize="24sp" />
 
-        <Button
-            android:id="@+id/btnIngresar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/ingresar"
-            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnLogOut"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Button"
-        tools:layout_editor_absoluteX="133dp"
-        tools:layout_editor_absoluteY="286dp" />
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:text="Desconectarse"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnIngresar" />
+
+    <Button
+        android:id="@+id/btnIngresar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/ingresar"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lytLog" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
