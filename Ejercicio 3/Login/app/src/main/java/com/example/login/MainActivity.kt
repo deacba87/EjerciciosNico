@@ -27,9 +27,11 @@ class MainActivity : AppCompatActivity()
     /**/
     private lateinit var btnLogin: Button
     private lateinit var btnLogout: Button
+    private lateinit var btnRegistrarse: Button
     private lateinit var rdbGoogle: RadioButton
     private lateinit var rdbCorreo: RadioButton
     private lateinit var lytLog: LinearLayout
+    private lateinit var lytOpciones: LinearLayout
     private lateinit var txtUsuario: TextView
     private lateinit var txtPass: TextView
     private lateinit var txtSaludo: TextView
@@ -42,16 +44,18 @@ class MainActivity : AppCompatActivity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //------------------------------------------------------------------------------------------
+        /*----------------------------------------------------------------------------------------*/
         btnLogin = findViewById(R.id.btnIngresar)
         btnLogout = findViewById(R.id.btnLogOut)
+        btnRegistrarse = findViewById(R.id.btnRegistrarse)
         rdbGoogle = findViewById(R.id.rdbGoogle)
         rdbCorreo = findViewById(R.id.rdbCorreo)
         lytLog = findViewById(R.id.lytLog)
+        lytOpciones = findViewById(R.id.lytOpciones)
         txtUsuario = findViewById(R.id.txtUsuario)
         txtPass = findViewById(R.id.txtPass)
         txtSaludo  = findViewById(R.id.txtSaludo)
-        //------------------------------------------------------------------------------------------
+        /*----------------------------------------------------------------------------------------*/
         btnLogin.setOnClickListener(
                 View.OnClickListener { validarLogin() }
         )
@@ -59,7 +63,9 @@ class MainActivity : AppCompatActivity()
         btnLogout.setOnClickListener(
                 View.OnClickListener { realizarLogout() }
         )
-        //------------------------------------------------------------------------------------------
+
+        btnRegistrarse.setOnClickListener( View.OnClickListener { registrarse() } )
+        /*----------------------------------------------------------------------------------------*/
         rdbGoogle.setOnClickListener(View.OnClickListener { rdbClic() })
         rdbCorreo.setOnClickListener(View.OnClickListener { rdbClic() })
         rdbGoogle.isChecked = true
@@ -75,6 +81,26 @@ class MainActivity : AppCompatActivity()
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
 
+    }
+
+    private fun registrarse()
+    {
+        auth.createUserWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
+                .addOnCompleteListener(this)
+                {
+                    task ->
+                    if (task.isSuccessful)
+                    {
+                        mostrarToast("Registrado exitosamente por correo")
+                        updateInterface()
+                        System.out.println("dea " + "Registrado exitosamente por correo")
+                    }
+                    else
+                    {
+                        mostrarToast("No se pudo Registrar  por correo")
+                        System.out.println("dea " + "No se pudo Registrar  por correo")
+                    }
+                }
     }
 
     override fun onStart()
@@ -97,7 +123,7 @@ class MainActivity : AppCompatActivity()
             }
             else if (user != null)
             {
-                datos = user.displayName.toString() + " - by Correo"
+                datos = user.email.toString() + " - by Correo"
             }
         }
 
@@ -113,12 +139,16 @@ class MainActivity : AppCompatActivity()
             btnLogout.visibility = View.GONE
             btnLogin.visibility = View.VISIBLE
             txtSaludo.text = "Usted no se encuentra logueado"
+            lytOpciones.visibility = View.VISIBLE
         }
         else
         {
             btnLogout.visibility = View.VISIBLE
             btnLogin.visibility = View.GONE
             txtSaludo.text = "Bienvenido " + datos
+            lytOpciones.visibility = View.GONE
+            lytLog.visibility = View.GONE
+            btnRegistrarse.visibility = View.GONE
         }
     }
 
@@ -160,15 +190,23 @@ class MainActivity : AppCompatActivity()
                     { task ->
                         if (task.isSuccessful)
                         {
-                            Toast.makeText(this.applicationContext, "Ok", Toast.LENGTH_LONG)
                             updateInterface()
+                            mostrarToast("Logueado exitosamente mediante correo")
+                            txtPass.text = ""
+                            txtUsuario.text = ""
                         }
                         else
                         {
-                            Toast.makeText(this.applicationContext, "Error", Toast.LENGTH_LONG)
+                            mostrarToast("No se pudo loguear mediante correo")
+
                         }
                     }
         }
+    }
+
+    private fun mostrarToast(mensaje: String)
+    {
+        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
     }
 
     private fun rdbClic()
@@ -176,25 +214,28 @@ class MainActivity : AppCompatActivity()
         if (rdbGoogle.isChecked)
         {
             lytLog.visibility = View.GONE
+            btnRegistrarse.visibility = View.GONE
         }
         else if(rdbCorreo.isChecked)
         {
             lytLog.visibility = View.VISIBLE
+            btnRegistrarse.visibility = View.VISIBLE
         }
     }
 
     private fun realizarLogout()
     {
-
         val account = GoogleSignIn.getLastSignedInAccount(this)
+        val user = auth.currentUser
         if (account != null)
         {
             mGoogleSignInClient.signOut()
-
+            mostrarToast("Deslogueado de la cuenta de Google")
         }
-        else
+        else if(user != null)
         {
-
+            auth.signOut()
+            mostrarToast("Deslogueado de la cuenta de Correo")
         }
 
 
