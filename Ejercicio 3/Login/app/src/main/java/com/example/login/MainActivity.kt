@@ -8,6 +8,7 @@ package com.example.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 
@@ -38,6 +40,8 @@ class MainActivity : AppCompatActivity()
     /**/
     private lateinit var auth: FirebaseAuth
     private lateinit var mGoogleSignInClient: GoogleSignInClient
+    /**/
+    private lateinit var mailLog: String
     /**/
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -80,12 +84,11 @@ class MainActivity : AppCompatActivity()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
-
     }
 
     private fun registrarse()
     {
-        auth.createUserWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
+        /*auth.createUserWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
                 .addOnCompleteListener(this)
                 {
                     task ->
@@ -100,6 +103,27 @@ class MainActivity : AppCompatActivity()
                         mostrarToast("No se pudo Registrar  por correo")
                         System.out.println("dea " + "No se pudo Registrar  por correo")
                     }
+                }*/
+
+        var actionCodeSettings = ActionCodeSettings.newBuilder()
+                .setUrl("https://loginexampledea.com/")
+                .setAndroidPackageName("com.example.login", true, "11")
+                .setHandleCodeInApp(true)
+                .setDynamicLinkDomain("loginexampledea.page.link")
+                .build()
+        mailLog = txtUsuario.text.toString()
+        auth.sendSignInLinkToEmail(mailLog, actionCodeSettings)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful)
+                    {
+                        System.out.println("deacba87 task.isSuccessful")
+                    }
+                    else
+                    {
+                        System.out.println("deacba87 task NO Successful")
+                        System.out.println("deacba87 " + task.exception.toString())
+                        System.out.println("deacba87 " + task.result.toString())
+                    }
                 }
     }
 
@@ -107,6 +131,44 @@ class MainActivity : AppCompatActivity()
     {
         super.onStart()
         updateInterface()
+        revisarLink()
+    }
+    private fun revisarLink()
+    {
+        val auth = this.auth
+        val intent = intent
+        val emailLink = intent.data.toString()
+
+        // Confirm the link is a sign-in with email link.
+        if (auth.isSignInWithEmailLink(emailLink))
+        {
+            // Retrieve this from wherever you stored it
+            val email = mailLog
+
+            // The client SDK will parse the code from the link for you.
+            auth.signInWithEmailLink(email, emailLink)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("deacba87", "Successfully signed in with email link!")
+                            System.out.println("deacba87 - Successfully signed in with email link!")
+                            val result = task.result
+                            System.out.println("deacba87 - resulte: " + result.toString() )
+                            System.out.println("deacba87 - resulte.user: " + result?.user?.toString() )
+                            Log.d("deacba87", "resulte: " + result.toString())
+                            Log.d("deacba87", "user: " + result?.user?.toString())
+                            // You can access the new user via result.getUser()
+                            // Additional user info profile *not* available via:
+                            // result.getAdditionalUserInfo().getProfile() == null
+                            // You can check if the user is new or existing:
+                            // result.getAdditionalUserInfo().isNewUser()
+                        }
+                        else
+                        {
+                            Log.e("deacba87",  "Error signing in with email link " + task.exception.toString()  , task.exception)
+                            System.out.println("deacba87 " + "Error signing in with email link " + task.exception.toString())
+                        }
+                    }
+        }
     }
 
     private fun isLogged(): Pair<Boolean, String>
@@ -183,9 +245,8 @@ class MainActivity : AppCompatActivity()
             val signInIntent = mGoogleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
-        else if(rdbCorreo.isChecked)
-        {
-            auth.signInWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
+        else if(rdbCorreo.isChecked) {
+            /*auth.signInWithEmailAndPassword(txtUsuario.text.toString(), txtPass.text.toString())
                     .addOnCompleteListener(this)
                     { task ->
                         if (task.isSuccessful)
@@ -200,7 +261,8 @@ class MainActivity : AppCompatActivity()
                             mostrarToast("No se pudo loguear mediante correo")
 
                         }
-                    }
+                    }*/
+
         }
     }
 
@@ -251,5 +313,14 @@ class MainActivity : AppCompatActivity()
             Toast.makeText(this.applicationContext, "Login correcto", Toast.LENGTH_LONG)
             updateInterface()
         }
+
+        revisarLink()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        revisarLink()
     }
 }
+
+

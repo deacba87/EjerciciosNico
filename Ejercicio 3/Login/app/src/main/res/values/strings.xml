@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Login</string>
     <string name="usuario">Usuario</string>
+    <string name="correo">Correo</string>
     <string name="ingresar">Ingresar</string>
     <string name="contraseña">Contraseña</string>
+    <string name="test_correo">dea_cba87@hotmail.com</string>
+    <string name="test_contrasena">1qazZAQ!</string>
 </resources>

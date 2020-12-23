@@ -79,10 +79,11 @@
             android:autoText="false"
             android:contentDescription="ContentDescription"
             android:ems="10"
-            android:hint="@string/usuario"
+            android:hint="@string/correo"
             android:inputType="textPersonName"
             android:selectAllOnFocus="true"
             android:singleLine="true"
+            android:text="@string/test_correo"
             android:textColor="#000000"
             android:textSize="24sp" />
 
@@ -95,6 +96,7 @@
             android:inputType="textPassword"
             android:password="true"
             android:singleLine="true"
+            android:text="@string/test_contrasena"
             android:textColor="#000000"
             android:textSize="24sp" />
 
