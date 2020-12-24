@@ -3,6 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
+    //id 'com.google.firebase.storage.ktx.component1'
+    //id 'com.google.firebase.storage.ktx.component2'
 }
 
 android {

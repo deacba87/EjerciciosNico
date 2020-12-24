@@ -40,6 +40,7 @@ class RegusterTicketActivity : AppCompatActivity()
 
         txtRegTicketDate = findViewById(R.id.txtRegTicketDate)
         txtRegTicketDate.setOnClickListener { txtRegTicketDateOnClick() }
+        //txtRegTicketDate.text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
         txtRegTicketAmount = findViewById(R.id.txtRegTicketAmount)
 
@@ -78,7 +79,6 @@ class RegusterTicketActivity : AppCompatActivity()
         if( txtRegTicketDate.text.toString() == null || txtRegTicketDate.text.toString() == "" ||
             txtRegTicketAmount.text.toString() == null || txtRegTicketAmount.text.toString() == "" ||
             ticketPhoto == null )
-
         {
             Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_LONG)
         }
@@ -87,39 +87,37 @@ class RegusterTicketActivity : AppCompatActivity()
             val date = txtRegTicketDate.text.toString()
             val amount = txtRegTicketAmount.text.toString().toDouble()
             val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-            val ticket = Ticket(date, amount, ticketPhoto!!, today)
+            val ticket = Ticket(date, amount, ticketPhoto!!, today, applicationContext)
 
-
+            if (amount > 0)
+            {
+                Toast.makeText(this, "Pre-registrado", Toast.LENGTH_LONG).show()
+                if (ticket.registerTicket())
+                {
+                    Toast.makeText(this, "Ticket pre-registrado", Toast.LENGTH_LONG).show()
+                }
+                else
+                {
+                    Toast.makeText(this, "Ticket fallo en pre-registrado", Toast.LENGTH_LONG).show()
+                }
+            }
+            else
+            {
+                Toast.makeText(this, "Ingresar monto mayor a cero", Toast.LENGTH_LONG).show()
+            }
         }
 
-        /*if (txtRegTicketDate.text == null)
-        {
-            Log.e("dea_amount", "Monto nulo")
-        }
-        else
-        {
-            Log.i("dea_amount_0", txtRegTicketDate.text.toString())
-        }
+        defaultValueFields()
+    }
 
-        var amount2: Double? =  null
-        if (txtRegTicketDate.text.toString().isDigitsOnly())
-        {
-             amount2 = txtRegTicketAmount.text.toString().toDouble()
-        }
-        else
-        {
-            Log.i("dea_amount_e", txtRegTicketAmount.text.toString().toDouble().toString())
-            Log.i("dea_amount_e2", txtRegTicketAmount.text.toString().toDoubleOrNull().toString())
-            val def = "0"
-            amount2 = def.toDouble()
-        }
-        Log.i("dea_amount", amount2.toString())
-
-        Log.i("dea_today_format", DateTimeFormatter.ISO_LOCAL_DATE.toString())
-        Log.i("dea_today_now", LocalDateTime.now().toString())
-        val today = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-        Log.i("dea_today", today)*/
-
+    private fun defaultValueFields()
+    {
+        //txtRegTicketDate.text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        //txtRegTicketAmount.text = "0"
+        txtRegTicketDate.text = ""
+        txtRegTicketAmount.text = ""
+        ticketPhoto = null
+        imgRegTicketPhoto.setImageBitmap(ticketPhoto)
     }
 
     @Override

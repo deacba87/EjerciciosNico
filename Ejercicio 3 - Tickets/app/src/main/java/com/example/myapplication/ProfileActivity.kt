@@ -28,7 +28,6 @@ class ProfileActivity : AppCompatActivity()
     private val CAMERA_REQUEST: Int = 1
     /*--------------------------------------------------------------------------------------------*/
     private var mStorageRef: StorageReference? = null
-
     /*--------------------------------------------------------------------------------------------*/
     private lateinit var txtProfileName: EditText
     private lateinit var imgProfilePicture: ImageView

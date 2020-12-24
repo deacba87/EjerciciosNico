@@ -141,6 +141,29 @@ object SingletonLogin
         val path = userMail?.uid.toString() + "/Profile/profilePicture.jpg"
         return path
     }
+    fun getUserId(): String
+    {
+        var result: String = ""
+        when(loginType)
+        {
+            LoginType.GOOGLE -> result = getUserIdGoogle()
+            LoginType.MAIL -> result = getUserIdMail()
+        }
+        return result
+    }
+    private fun getUserIdGoogle(): String
+    {
+        return ""
+    }
+    private fun getUserIdMail(): String
+    {
+        var ret = userMail?.uid.toString()
+        if (ret.compareTo("") == 0)
+        {
+            ret = "defaultUser"
+        }
+        return  ret
+    }
     //
     fun getUserTicketPath():String
     {
