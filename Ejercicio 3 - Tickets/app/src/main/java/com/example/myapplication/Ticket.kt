@@ -2,23 +2,22 @@ package com.example.myapplication
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.util.Log
 import android.widget.Toast
-import com.google.android.gms.auth.api.signin.internal.Storage
-import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.StorageReference
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAmount
-import java.util.*
-import kotlin.collections.ArrayList
 
 class Ticket()
 {
+    companion object {
+        val DATE = "date"
+        val AMOUNT = "amount"
+        val CREATED = "created"
+    }
+
     private val fileExtention = ".jpg"
 
     var date: String = ""
@@ -52,9 +51,9 @@ class Ticket()
                 setCustomMetadata("id", "filmId")
             }*/
             val metaData = StorageMetadata.Builder()
-                    .setCustomMetadata("date", date)
-                    .setCustomMetadata("amount", amount.toString())
-                    .setCustomMetadata("created", created)
+                    .setCustomMetadata(Ticket.DATE, date)
+                    .setCustomMetadata(Ticket.AMOUNT, amount.toString())
+                    .setCustomMetadata(Ticket.CREATED, created)
                     .build()
 
             var uploadTask = storageRef!!.child(filePath).putBytes(data, metaData)
@@ -93,13 +92,15 @@ class Ticket()
     {
     }
 
-    fun getTicketList()
+    fun getTicketList(): StorageReference
     {
         val filePath = getFilePath()
         var storageRef = FirebaseStorage.getInstance().getReference();
         var childe = storageRef.child(filePath)
+        return childe
 
         // Find all the prefixes and items.
+        /*
         childe.listAll()
                 .addOnSuccessListener { it ->
 
@@ -107,9 +108,12 @@ class Ticket()
                     {
                         Log.i("dea_items_parent", item.parent.toString() )
                         Log.i("dea_items_name", item.name )
-
                     }
+
+
                 }
+         */
+
 
     }
 
