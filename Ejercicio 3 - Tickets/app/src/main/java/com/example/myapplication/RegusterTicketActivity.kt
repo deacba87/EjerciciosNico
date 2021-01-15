@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,9 +30,11 @@ class RegusterTicketActivity : AppCompatActivity()
     private val TICKET_DATE: String = "TICKET_DATE"
     private val TICKET_AMOUNT: String = "TICKET_AMOUNT"
     private val TICKET_CREATED: String = "TICKET_CREATED"
+    private val TICKET_PATH: String = "TICKET_PATH"
     /*-------------------------------------------------------------------------------------------*/
     private var ticketPhoto: Bitmap? = null
     private var typeDisplay: String = ""
+    private var storageRefChild: String = ""
     /*-------------------------------------------------------------------------------------------*/
     private lateinit var txtRegTicketDate: TextView
     private lateinit var txtRegTicketAmount: TextView
@@ -69,8 +72,10 @@ class RegusterTicketActivity : AppCompatActivity()
         {
             setModeEdit()
             val url = intent.getStringExtra(URL_IMG).toString()
+            //storageRefChild = url
             val date = intent.getStringExtra(TICKET_DATE).toString()
             val amount = intent.getStringExtra(TICKET_AMOUNT).toString()
+            storageRefChild = intent.getStringExtra(TICKET_PATH).toString()
             loadTicketInfo(url, date, amount)
         }
 
@@ -107,7 +112,7 @@ class RegusterTicketActivity : AppCompatActivity()
     private fun setModeEdit()
     {
         btnRegTicketPhoto.visibility = View.GONE
-        btnRegTicketRegister.visibility = View.GONE
+        btnRegTicketRegister.visibility = View.VISIBLE
     }
     private fun setModeDisplay()
     {
@@ -144,6 +149,21 @@ class RegusterTicketActivity : AppCompatActivity()
     }
     private fun onClickbtnRegTicketRegister()
     {
+
+        if (typeDisplay == MODE_REGISTER)
+        {
+            registerTicket()
+            defaultValueFields()
+        }
+        else if(typeDisplay == MODE_EDIT)
+        {
+            saveTicket()
+            Toast.makeText(this, "Datos actualizados", Toast.LENGTH_LONG)
+        }
+    }
+
+    private fun registerTicket()
+    {
         if( txtRegTicketDate.text.toString() == null || txtRegTicketDate.text.toString() == "" ||
             txtRegTicketAmount.text.toString() == null || txtRegTicketAmount.text.toString() == "" ||
             ticketPhoto == null )
@@ -174,8 +194,54 @@ class RegusterTicketActivity : AppCompatActivity()
                 Toast.makeText(this, "Ingresar monto mayor a cero", Toast.LENGTH_LONG).show()
             }
         }
+    }
+    private fun saveTicket()
+    {
+        if( txtRegTicketDate.text.toString() == null || txtRegTicketDate.text.toString() == "" ||
+            txtRegTicketAmount.text.toString() == null || txtRegTicketAmount.text.toString() == "" ||
+            ticketPhoto == null )
+        {
+            Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_LONG)
+        }
+        else
+        {
+            val date = txtRegTicketDate.text.toString()
+            val amount = txtRegTicketAmount.text.toString().toDouble()
+            val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            //val ticket = Ticket(date, amount, ticketPhoto!!, today, applicationContext)
 
-        defaultValueFields()
+            if (amount > 0)
+            {
+                val storage = FirebaseStorage.getInstance()
+                // Create a storage reference from our app
+                val storageRef = storage.reference
+                // Get reference to the file
+                val forestRef = storageRef.child(storageRefChild)
+
+                // Create file metadata including the content type
+                /*val metadata = storageMetadata {
+                    contentType = "image/jpg"
+                    setCustomMetadata("myCustomProperty", "myValue")
+                }*/
+
+                val metaData = StorageMetadata.Builder()
+                    //.setCustomMetadata(Ticket.DATE, date)
+                    .setContentType(Ticket.CONTENT_TYPE)
+                    .setCustomMetadata(Ticket.AMOUNT, amount.toString())
+                    //.setCustomMetadata(Ticket.CREATED, created)
+                    .build()
+                // Update metadata properties
+                forestRef.updateMetadata(metaData).addOnSuccessListener { updatedMetadata ->
+                    Log.i("dea_update_metadata", updatedMetadata.toString())
+                }.addOnFailureListener {
+                    Log.e("dea_update_metadata", it.toString())
+                }
+            }
+            else
+            {
+                Toast.makeText(this, "Ingresar monto mayor a cero", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun defaultValueFields()

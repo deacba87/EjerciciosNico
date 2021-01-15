@@ -23,6 +23,7 @@ import java.text.FieldPosition
     private val TICKET_DATE: String = "TICKET_DATE"
     private val TICKET_AMOUNT: String = "TICKET_AMOUNT"
     private val TICKET_CREATED: String = "TICKET_CREATED"
+    private val TICKET_PATH: String = "TICKET_PATH"
     //
     private lateinit var lstHistoryTickets: ListView
     private var lstTicketsData = mutableListOf<String>()
@@ -50,6 +51,8 @@ import java.text.FieldPosition
         intent.putExtra(TICKET_DATE, lstTicketsObject.get(position).date)
         intent.putExtra(TICKET_AMOUNT, lstTicketsObject.get(position).amount.toString())
         intent.putExtra(TICKET_CREATED, lstTicketsObject.get(position).created)
+        intent.putExtra(TICKET_PATH, lstTicketsObject.get(position).path)
+
 
         startActivity(intent)
         //startActivity(Intent(this.applicationContext, LoginActivity::class.java))
@@ -71,13 +74,13 @@ import java.text.FieldPosition
                     for (item in it.items)
                     {
                         text = item.parent.toString() +"/" + item.name
-                        /*Log.i("dea", item.path)
-                        Log.i("dea", item.name)
-                        Log.i("dea", item.bucket)
-                        Log.i("dea", item.parent.toString())
-                        Log.i("dea", item.downloadUrl.toString())
-                        Log.i("dea", item.metadata.toString())
-                        Log.i("dea", item.root.toString())*/
+                        /*Log.i("dea1", item.path)
+                        Log.i("dea2", item.name)
+                        Log.i("dea3", item.bucket)
+                        Log.i("dea4", item.parent.toString())
+                        Log.i("dea5", item.downloadUrl.toString())
+                        Log.i("dea6", item.metadata.toString())
+                        Log.i("dea7", item.root.toString())*/
                         getTicketInfo(text, item.path)
                     }
                 }
@@ -87,7 +90,7 @@ import java.text.FieldPosition
         val storage = FirebaseStorage.getInstance()
         val gsReference = storage.reference.child(pName)
 
-        Log.i("dea pNAme", pName)
+        //Log.i("dea pNAme", pName)
 
         gsReference.metadata.addOnSuccessListener { metadata ->
             val date = metadata.getCustomMetadata(Ticket.DATE)
@@ -98,6 +101,7 @@ import java.text.FieldPosition
             ticket.date = date!!
             ticket.amount = amount!!.toDouble()
             ticket.created = created!!
+            ticket.path = pName
 
             val texto = "Fecha: " + date + " - Monto; " + amount + " - Registrado el: " + created
 

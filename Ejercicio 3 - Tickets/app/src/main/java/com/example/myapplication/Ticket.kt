@@ -16,6 +16,7 @@ class Ticket()
         val DATE = "date"
         val AMOUNT = "amount"
         val CREATED = "created"
+        val CONTENT_TYPE = "image/jpg"
     }
 
     private val fileExtention = ".jpg"
@@ -25,6 +26,7 @@ class Ticket()
     var photo: Bitmap? = null
     var created: String = ""
     var context: Context? = null
+    var path: String = ""
 
     constructor(date: String, amount: Double, photo: Bitmap, created: String, context: Context): this()
     {
