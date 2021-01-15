@@ -5,11 +5,14 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.storage.FirebaseStorage
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -22,6 +25,10 @@ class RegusterTicketActivity : AppCompatActivity()
     private val MODE_REGISTER: String = "REGISTER"
     private val MODE_DISPLAY: String = "DISPLAY"
     private val MODE_EDIT: String = "EDIT"
+    private val URL_IMG: String = "URL_IMG"
+    private val TICKET_DATE: String = "TICKET_DATE"
+    private val TICKET_AMOUNT: String = "TICKET_AMOUNT"
+    private val TICKET_CREATED: String = "TICKET_CREATED"
     /*-------------------------------------------------------------------------------------------*/
     private var ticketPhoto: Bitmap? = null
     private var typeDisplay: String = ""
@@ -61,10 +68,37 @@ class RegusterTicketActivity : AppCompatActivity()
         else if (typeDisplay == MODE_EDIT)
         {
             setModeEdit()
+            val url = intent.getStringExtra(URL_IMG).toString()
+            val date = intent.getStringExtra(TICKET_DATE).toString()
+            val amount = intent.getStringExtra(TICKET_AMOUNT).toString()
+            loadTicketInfo(url, date, amount)
         }
 
 
     }
+
+    private fun loadTicketInfo(imgUri: String, date: String, amount: String)
+    {
+        txtRegTicketDate.text = date
+        txtRegTicketAmount.text = amount
+
+        if (imgUri != null)
+        {
+            val storage = FirebaseStorage.getInstance()
+            val gsReference = storage.getReferenceFromUrl(imgUri)
+            val ONE_MEGABYTE: Long = 1024 * 1024
+            gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener {
+                // Data for "images/island.jpg" is returned, use this as needed
+
+                val bitm = BitmapFactory.decodeByteArray(it, 0, it.size)
+                imgRegTicketPhoto.setImageBitmap(bitm)
+
+            }.addOnFailureListener {
+                Log.e("dea_addOnFailureListener", it.message.toString())
+            }
+        }
+    }
+
     private fun setModeRegister()
     {
         btnRegTicketPhoto.visibility = View.VISIBLE
@@ -73,7 +107,7 @@ class RegusterTicketActivity : AppCompatActivity()
     private fun setModeEdit()
     {
         btnRegTicketPhoto.visibility = View.GONE
-        btnRegTicketRegister.visibility = View.VISIBLE
+        btnRegTicketRegister.visibility = View.GONE
     }
     private fun setModeDisplay()
     {
@@ -83,12 +117,15 @@ class RegusterTicketActivity : AppCompatActivity()
 
     private fun txtRegTicketDateOnClick()
     {
-        val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
-            val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
-            txtRegTicketDate.text = selectedDate
+        if(typeDisplay == MODE_REGISTER)
+        {
+            val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+                val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
+                txtRegTicketDate.text = selectedDate
+            }
+            )
+            newFragment.show(supportFragmentManager, "datePicker")
         }
-        )
-        newFragment.show(supportFragmentManager, "datePicker")
     }
     private fun onClickbtnRegTicketPhoto()
     {
