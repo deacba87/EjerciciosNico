@@ -5,33 +5,32 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.widget.*
-import androidx.core.text.isDigitsOnly
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import androidx.appcompat.app.AppCompatActivity
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 class RegusterTicketActivity : AppCompatActivity()
 {
     /*-------------------------------------------------------------------------------------------*/
     private val CAMERA_PERMISSION_CODE:Int = 100
     private val CAMERA_REQUEST: Int = 1
+    private val TYPEDISPLAY: String = "TYPE_DISPLAY"
+    private val MODE_REGISTER: String = "REGISTER"
+    private val MODE_DISPLAY: String = "DISPLAY"
+    private val MODE_EDIT: String = "EDIT"
     /*-------------------------------------------------------------------------------------------*/
     private var ticketPhoto: Bitmap? = null
+    private var typeDisplay: String = ""
     /*-------------------------------------------------------------------------------------------*/
     private lateinit var txtRegTicketDate: TextView
     private lateinit var txtRegTicketAmount: TextView
     private lateinit var imgRegTicketPhoto: ImageView
     private lateinit var btnRegTicketPhoto: Button
     private lateinit var btnRegTicketRegister: Button
-
     /*-------------------------------------------------------------------------------------------*/
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -45,17 +44,46 @@ class RegusterTicketActivity : AppCompatActivity()
         txtRegTicketAmount = findViewById(R.id.txtRegTicketAmount)
 
         imgRegTicketPhoto = findViewById(R.id.imgRegTicketPhoto)
-        imgRegTicketPhoto.setOnClickListener (View.OnClickListener { onClickbtnRegTicketPhoto() })
+        imgRegTicketPhoto.setOnClickListener(View.OnClickListener { onClickbtnRegTicketPhoto() })
 
         btnRegTicketPhoto = findViewById(R.id.btnRegTicketPhoto)
         btnRegTicketPhoto.setOnClickListener(View.OnClickListener { onClickbtnRegTicketPhoto() })
 
         btnRegTicketRegister = findViewById(R.id.btnRegTicketRegister)
         btnRegTicketRegister.setOnClickListener(View.OnClickListener { onClickbtnRegTicketRegister() })
+
+        val myIntent = intent
+        typeDisplay = intent.getStringExtra(TYPEDISPLAY).toString()
+        if (typeDisplay == MODE_REGISTER)
+        {
+            setModeRegister()
+        }
+        else if (typeDisplay == MODE_EDIT)
+        {
+            setModeEdit()
+        }
+
+
     }
+    private fun setModeRegister()
+    {
+        btnRegTicketPhoto.visibility = View.VISIBLE
+        btnRegTicketRegister.visibility = View.VISIBLE
+    }
+    private fun setModeEdit()
+    {
+        btnRegTicketPhoto.visibility = View.GONE
+        btnRegTicketRegister.visibility = View.VISIBLE
+    }
+    private fun setModeDisplay()
+    {
+        btnRegTicketPhoto.visibility = View.GONE
+        btnRegTicketRegister.visibility = View.GONE
+    }
+
     private fun txtRegTicketDateOnClick()
     {
-        val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener{view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+        val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
             val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
             txtRegTicketDate.text = selectedDate
         }
@@ -64,14 +92,17 @@ class RegusterTicketActivity : AppCompatActivity()
     }
     private fun onClickbtnRegTicketPhoto()
     {
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        if (typeDisplay == MODE_REGISTER)
         {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
-        }
-        else
-        {
-            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            startActivityForResult(cameraIntent, CAMERA_REQUEST)
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+            {
+                requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            }
+            else
+            {
+                val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(cameraIntent, CAMERA_REQUEST)
+            }
         }
     }
     private fun onClickbtnRegTicketRegister()

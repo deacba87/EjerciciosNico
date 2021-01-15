@@ -13,7 +13,8 @@ class MainMenuActivity : AppCompatActivity()
     Comentarios
     - Si, el menu es feo  y podría haber usado el menu que suele ir arriba
      */
-
+    private val MODE_REGISTER: String = "REGISTER"
+    private val TYPEDISPLAY: String = "TYPE_DISPLAY"
     /*--------------------------------------------------------------------------------------------*/
     private lateinit var btnProfile : Button
     private lateinit var btnRegisterTicket : Button
@@ -51,6 +52,7 @@ class MainMenuActivity : AppCompatActivity()
     private fun moveToRegisterTicket()
     {
         var intent = Intent(this.applicationContext, RegusterTicketActivity::class.java)
+        intent.putExtra(TYPEDISPLAY, MODE_REGISTER)
         startActivity(intent)
     }
     private fun moveToHistory()

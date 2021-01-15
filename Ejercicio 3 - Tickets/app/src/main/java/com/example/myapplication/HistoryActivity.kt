@@ -1,14 +1,18 @@
-package com.example.myapplication
+ package com.example.myapplication
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import com.google.firebase.storage.FirebaseStorage
+import android.widget.AdapterView.OnItemClickListener
+
+
+
 
 class HistoryActivity : AppCompatActivity()
 {
@@ -20,11 +24,18 @@ class HistoryActivity : AppCompatActivity()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
-        lstHistoryTickets = findViewById(R.id.lstHistoryTickets)
-
+        lstHistoryTickets = findViewById(R.id.lstHistoryTickets4)
+        //lstHistoryTickets.setOnClickListener(View.OnClickListener { onClickListenerlstHistoryTickets() })
+        lstHistoryTickets.setOnItemClickListener { arg0, arg1, position, arg3 -> Toast.makeText(this, "" + position, Toast.LENGTH_SHORT).show() }
 
         //Toast.makeText(this, "Alona", Toast.LENGTH_SHORT).show()
         loadHistoryTickets()
+    }
+    private fun onClickListenerlstHistoryTickets()
+    {
+        Log.i("dea_selectedItem", lstHistoryTickets.selectedItem.toString())
+        Log.i("dea_selectedItemId", lstHistoryTickets.selectedItemId.toString())
+        Log.i("dea_selectedItemPosition", lstHistoryTickets.selectedItemPosition.toString())
     }
 
     private fun loadHistoryTickets()
