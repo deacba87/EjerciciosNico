@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:onClick="onClickbtnRegTicketPhoto"
     tools:context=".RegusterTicketActivity">
 
     <EditText
@@ -18,8 +19,9 @@
         android:editable="false"
         android:ems="10"
         android:focusable="false"
-        android:hint="Fecha del ticket"
+        android:hint="@string/fecha_del_ticket"
         android:inputType="date"
+        android:onClick="txtRegTicketDateOnClick"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,7 +35,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="10dp"
         android:ems="10"
-        android:hint="Monto del ticket"
+        android:hint="@string/monto_del_ticket"
         android:inputType="numberDecimal"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,8 +49,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:clickable="true"
         android:background="#000000"
+        android:clickable="true"
+        android:onClick="onClickbtnRegTicketPhoto"
         android:padding="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
@@ -63,7 +66,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:text="Foto del ticket"
+        android:text="@string/foto_del_ticket"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgRegTicketPhoto" />
@@ -75,7 +78,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:text="Guardar ticket"
+        android:onClick="onClickbtnRegTicketRegister"
+        android:text="@string/guardar_ticket"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnRegTicketPhoto" />

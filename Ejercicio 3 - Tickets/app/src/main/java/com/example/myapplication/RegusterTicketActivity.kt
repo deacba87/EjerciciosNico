@@ -6,14 +6,19 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.R.string.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_profile.*
+import kotlinx.android.synthetic.main.activity_reguster_ticket.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -22,7 +27,7 @@ class RegusterTicketActivity : AppCompatActivity()
     /*-------------------------------------------------------------------------------------------*/
     private val CAMERA_PERMISSION_CODE:Int = 100
     private val CAMERA_REQUEST: Int = 1
-    private val TYPEDISPLAY: String = "TYPE_DISPLAY"
+    /*private val TYPEDISPLAY: String = "TYPE_DISPLAY"
     private val MODE_REGISTER: String = "REGISTER"
     private val MODE_DISPLAY: String = "DISPLAY"
     private val MODE_EDIT: String = "EDIT"
@@ -30,66 +35,49 @@ class RegusterTicketActivity : AppCompatActivity()
     private val TICKET_DATE: String = "TICKET_DATE"
     private val TICKET_AMOUNT: String = "TICKET_AMOUNT"
     private val TICKET_CREATED: String = "TICKET_CREATED"
-    private val TICKET_PATH: String = "TICKET_PATH"
+    private val TICKET_PATH: String = "TICKET_PATH"*/
     /*-------------------------------------------------------------------------------------------*/
     private var ticketPhoto: Bitmap? = null
-    private var typeDisplay: String = ""
+    private var typeDisplay: String? = ""
     private var storageRefChild: String = ""
-    /*-------------------------------------------------------------------------------------------*/
-    private lateinit var txtRegTicketDate: TextView
-    private lateinit var txtRegTicketAmount: TextView
-    private lateinit var imgRegTicketPhoto: ImageView
-    private lateinit var btnRegTicketPhoto: Button
-    private lateinit var btnRegTicketRegister: Button
     /*-------------------------------------------------------------------------------------------*/
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reguster_ticket)
 
-        txtRegTicketDate = findViewById(R.id.txtRegTicketDate)
-        txtRegTicketDate.setOnClickListener { txtRegTicketDateOnClick() }
-        //txtRegTicketDate.text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-
-        txtRegTicketAmount = findViewById(R.id.txtRegTicketAmount)
-
-        imgRegTicketPhoto = findViewById(R.id.imgRegTicketPhoto)
-        imgRegTicketPhoto.setOnClickListener(View.OnClickListener { onClickbtnRegTicketPhoto() })
-
-        btnRegTicketPhoto = findViewById(R.id.btnRegTicketPhoto)
-        btnRegTicketPhoto.setOnClickListener(View.OnClickListener { onClickbtnRegTicketPhoto() })
-
-        btnRegTicketRegister = findViewById(R.id.btnRegTicketRegister)
-        btnRegTicketRegister.setOnClickListener(View.OnClickListener { onClickbtnRegTicketRegister() })
-
-        val myIntent = intent
-        typeDisplay = intent.getStringExtra(TYPEDISPLAY).toString()
-        if (typeDisplay == MODE_REGISTER)
+        //val myIntent = intent
+        typeDisplay = intent.getStringExtra(TYPEDISPLAY.toString())
+        if (typeDisplay == MODE_REGISTER.toString())
         {
             setModeRegister()
         }
-        else if (typeDisplay == MODE_EDIT)
+        else if (typeDisplay == MODE_EDIT.toString())
         {
             setModeEdit()
-            val url = intent.getStringExtra(URL_IMG).toString()
+            val url = intent.getStringExtra(URL_IMG.toString()).toString()
             //storageRefChild = url
-            val date = intent.getStringExtra(TICKET_DATE).toString()
-            val amount = intent.getStringExtra(TICKET_AMOUNT).toString()
-            storageRefChild = intent.getStringExtra(TICKET_PATH).toString()
+            //val date = intent.getStringExtra(TICKET_DATE).toString()
+            val date = intent.getStringExtra(TICKET_DATE.toString()).toString()
+            val amount = intent.getStringExtra(TICKET_AMOUNT.toString()).toString()
+            storageRefChild = intent.getStringExtra(TICKET_PATH.toString()).toString()
             loadTicketInfo(url, date, amount)
         }
+        else(typeDisplay == null)
+        {
 
-
+        }
     }
 
     private fun loadTicketInfo(imgUri: String, date: String, amount: String)
     {
-        txtRegTicketDate.text = date
-        txtRegTicketAmount.text = amount
+        //val dateChar: CharSequence = date
+        txtRegTicketDate.setText(date)
+        txtRegTicketAmount.setText(amount)
 
         if (imgUri != null)
         {
-            val storage = FirebaseStorage.getInstance()
+            /*val storage = FirebaseStorage.getInstance()
             val gsReference = storage.getReferenceFromUrl(imgUri)
             val ONE_MEGABYTE: Long = 1024 * 1024
             gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener {
@@ -100,6 +88,10 @@ class RegusterTicketActivity : AppCompatActivity()
 
             }.addOnFailureListener {
                 Log.e("dea_addOnFailureListener", it.message.toString())
+            }*/
+            if (imgRegTicketPhoto != null)
+            {
+                Picasso.get().load(Uri.parse(imgUri)).into(imgRegTicketPhoto);
             }
         }
     }
@@ -120,21 +112,23 @@ class RegusterTicketActivity : AppCompatActivity()
         btnRegTicketRegister.visibility = View.GONE
     }
 
-    private fun txtRegTicketDateOnClick()
+    fun txtRegTicketDateOnClick(view: View)
     {
-        if(typeDisplay == MODE_REGISTER)
+        if(typeDisplay == MODE_REGISTER.toString())
         {
-            val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
-                val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
-                txtRegTicketDate.text = selectedDate
-            }
+            val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener
+                { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+                    //val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
+                    val selectedDate = "${dayOfMonth}/${(month + 1)}/$year"
+                    txtRegTicketDate.setText(selectedDate)
+                }
             )
             newFragment.show(supportFragmentManager, "datePicker")
         }
     }
-    private fun onClickbtnRegTicketPhoto()
+    fun onClickbtnRegTicketPhoto(view: View)
     {
-        if (typeDisplay == MODE_REGISTER)
+        if (typeDisplay == MODE_REGISTER.toString())
         {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
             {
@@ -147,15 +141,15 @@ class RegusterTicketActivity : AppCompatActivity()
             }
         }
     }
-    private fun onClickbtnRegTicketRegister()
+    fun onClickbtnRegTicketRegister(view: View)
     {
 
-        if (typeDisplay == MODE_REGISTER)
+        if (typeDisplay == MODE_REGISTER.toString())
         {
             registerTicket()
             defaultValueFields()
         }
-        else if(typeDisplay == MODE_EDIT)
+        else if(typeDisplay == MODE_EDIT.toString())
         {
             saveTicket()
             Toast.makeText(this, "Datos actualizados", Toast.LENGTH_LONG)
@@ -248,8 +242,9 @@ class RegusterTicketActivity : AppCompatActivity()
     {
         //txtRegTicketDate.text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         //txtRegTicketAmount.text = "0"
-        txtRegTicketDate.text = ""
-        txtRegTicketAmount.text = ""
+
+        txtRegTicketDate.text.clear()
+        txtRegTicketAmount.text.clear()
         ticketPhoto = null
         imgRegTicketPhoto.setImageBitmap(ticketPhoto)
     }

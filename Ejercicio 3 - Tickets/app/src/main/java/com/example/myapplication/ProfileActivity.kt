@@ -16,8 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.internal.Storage
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_profile.*
+import kotlinx.android.synthetic.main.activity_reguster_ticket.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.lang.Exception
 import java.net.URL
 
 
@@ -25,24 +29,29 @@ class ProfileActivity : AppCompatActivity()
 {
     /*--------------------------------------------------------------------------------------------*/
     private val CAMERA_PERMISSION_CODE:Int = 100
-    private val CAMERA_REQUEST: Int = 1
+    private val IMG_REQUEST: Int = 1
     /*--------------------------------------------------------------------------------------------*/
     private var mStorageRef: StorageReference? = null
+    private var bitmapProfilePicture: Bitmap? ? = null
     /*--------------------------------------------------------------------------------------------*/
-    private lateinit var txtProfileName: EditText
+    /*private lateinit var txtProfileName: EditText
     private lateinit var imgProfilePicture: ImageView
     private lateinit var btnProfileSelectPicture : Button
-    private lateinit var btnProfileSaveChanges: Button
+    private lateinit var btnProfileSaveChanges: Button*/
     /*--------------------------------------------------------------------------------------------*/
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        setElements()
+        //setElements()
         updateLayout()
         mStorageRef = FirebaseStorage.getInstance().getReference();
+
+        if (bitmapProfilePicture != null)
+            imgProfilePicture.setImageBitmap(bitmapProfilePicture)
+
     }
-    private fun setElements()
+    /*private fun setElements()
     {
         txtProfileName = findViewById(R.id.txtProfileName)
         imgProfilePicture = findViewById(R.id.imgProfilePicture)
@@ -52,7 +61,7 @@ class ProfileActivity : AppCompatActivity()
         btnProfileSelectPicture.setOnClickListener(View.OnClickListener { onClickProfileSelectPicture() })
         btnProfileSaveChanges.setOnClickListener(View.OnClickListener { onClickProfileSaveChanges() })
 
-    }
+    }*/
     private fun updateLayout()
     {
         if (SingletonLogin.isEditableName())
@@ -67,8 +76,8 @@ class ProfileActivity : AppCompatActivity()
         val imgUri: String? = SingletonLogin.getUserPhoto()
         if (imgUri != null)
         {
+            /*val storage = FirebaseStorage.getInstance()
 
-            val storage = FirebaseStorage.getInstance()
             val gsReference = storage.getReferenceFromUrl(imgUri)
             val ONE_MEGABYTE: Long = 1024 * 1024
             gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener {
@@ -79,27 +88,18 @@ class ProfileActivity : AppCompatActivity()
 
             }.addOnFailureListener {
                 Log.e("dea_addOnFailureListener", it.message.toString())
+            }*/
+            if (imgProfilePicture != null)
+            {
+                Picasso.get().load(Uri.parse(imgUri)).into(imgProfilePicture);
             }
 
-
-            /*
-            //imgProfilePicture.setImageURI(imgUri)
-            var mIcon11: Bitmap? = null
-            try {
-                val ins: InputStream = URL("gs://ejercicio4tickets.appspot.com/tempora/perfil.jpg").openStream()
-                mIcon11 = BitmapFactory.decodeStream(ins)
-            } catch (e: Exception) {
-                Log.e("Error", e.message!!)
-                e.printStackTrace()
-            }
-            imgProfilePicture.setImageBitmap(mIcon11)*/
         }
 
-
     }
-    private fun onClickProfileSelectPicture()
+    fun onClickProfileSelectPicture(view: View)
     {
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        /*if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
         {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
         }
@@ -107,9 +107,17 @@ class ProfileActivity : AppCompatActivity()
         {
             val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(cameraIntent, CAMERA_REQUEST)
-        }
+        }*/
+
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.action = Intent.ACTION_GET_CONTENT
+
+        val imgChooser = Intent.createChooser(intent, "Selecciona un ticket")
+        startActivityForResult(imgChooser, IMG_REQUEST)
+
     }
-    private fun onClickProfileSaveChanges()
+    fun onClickProfileSaveChanges(view: View)
     {
         SingletonLogin.saveUserProfile(txtProfileName.text.toString())
         updateProfilePicture()
@@ -138,7 +146,8 @@ class ProfileActivity : AppCompatActivity()
                     }
                     else
                     {
-
+                        Log.e("dea", task.result.toString())
+                        Log.e("dea", task.exception.toString())
                     }
                 }
     }
@@ -149,7 +158,7 @@ class ProfileActivity : AppCompatActivity()
         SingletonLogin.saveUserPhoto(url)
     }
 
-    @Override
+    /*@Override
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -165,15 +174,29 @@ class ProfileActivity : AppCompatActivity()
                 Toast.makeText(this, "Sin permisos para la camara.", Toast.LENGTH_LONG).show()
             }
         }
-    }
+    }*/
     @Override
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK)
+        if (requestCode == IMG_REQUEST &&
+            resultCode == RESULT_OK &&
+            data != null &&
+            data.data != null)
         {
-            val photo = data?.extras!!["data"] as Bitmap?
-            imgProfilePicture.setImageBitmap(photo)
+            /*val photo = data?.extras!!["data"] as Bitmap?
+            imgProfilePicture.setImageBitmap(photo)*/
+            val bitmap = try {
+                MediaStore.Images.Media.getBitmap(contentResolver, data.data)
+            }
+            catch (e: Exception) { null }
+
+            bitmap?.let {
+                //imgProfilePicture.setImageBitmap(bitmap)
+                bitmapProfilePicture = it
+                imgProfilePicture.setImageBitmap(it)
+            }
+
         }
     }
 

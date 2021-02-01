@@ -3,26 +3,24 @@ package com.example.myapplication
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.StorageReference
+import kotlinx.android.synthetic.main.activity_login.*
 
 
 class LoginActivity : AppCompatActivity()
 {
     /*--------------------------------------------------------------------------------------------*/
-    private lateinit var rdbGoogle : RadioButton
+    /*private lateinit var rdbGoogle : RadioButton
     private lateinit var rdbMail : RadioButton
     private lateinit var txtUser : TextView
     private lateinit var txtPassword : TextView
     private lateinit var btnLogin : Button
-    private lateinit var btnRegister : Button
+    private lateinit var btnRegister : Button*/
     /*--------------------------------------------------------------------------------------------*/
     private val RC_SIGN_IN = 1
     /*--------------------------------------------------------------------------------------------*/
@@ -32,24 +30,21 @@ class LoginActivity : AppCompatActivity()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        init_elements()
-        init_handlers()
-        init_values()
-        update_layout()
-
-
+        //init_elements()
+        rdbGoogle.isChecked = true
+        //init_handlers()
+        initLogin()
+        updateLayout(rdbGoogle)
     }
 
     override fun onResume()
     {
         super.onResume()
-        if (SingletonLogin.isLogged() == true)
-        {
+        if (SingletonLogin.isLogged())
             moveToMainMenu()
-        }
     }
 
-    private fun init_elements()
+    /*private fun init_elements()
     {
         rdbGoogle = findViewById(R.id.rdbGoogle)
         rdbMail = findViewById(R.id.rdbMail)
@@ -57,38 +52,35 @@ class LoginActivity : AppCompatActivity()
         txtPassword = findViewById(R.id.txtPassword)
         btnLogin = findViewById(R.id.btnLogin)
         btnRegister = findViewById(R.id.btnRegister)
-    }
+    }*/
 
-    private fun init_values()
+    private fun initLogin()
     {
-
         SingletonLogin.context = this
-
         // Google Auth *****************************************************************************
         val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .build()
         // Build a GoogleSignInClient with the options specified by gso.
         SingletonLogin.authGoogle = GoogleSignIn.getClient(this, gso)
-
         // Mail Auth *******************************************************************************
         SingletonLogin.authMail = FirebaseAuth.getInstance()
     }
 
-    private fun init_handlers()
+    /*private fun init_handlers()
     {
         rdbGoogle.isChecked = true
 
-        rdbGoogle.setOnClickListener(View.OnClickListener { update_layout() })
-        rdbMail.setOnClickListener(View.OnClickListener { update_layout() })
+        //rdbGoogle.setOnClickListener(View.OnClickListener { update_layout() })
+        //rdbMail.setOnClickListener(View.OnClickListener { update_layout() })
 
-        btnLogin.setOnClickListener(View.OnClickListener { login() })
-        btnRegister.setOnClickListener(View.OnClickListener { register() })
-    }
+        //btnLogin.setOnClickListener(View.OnClickListener { login() })
+        //btnRegister.setOnClickListener(View.OnClickListener { register() })
+    }*/
 
-    private fun update_layout()
+    fun updateLayout(view: View)
     {
-        if (rdbGoogle.isChecked)
+        if ( rdbGoogle.isChecked)
         {
             txtUser.visibility = View.GONE
             txtPassword.visibility = View.GONE
@@ -101,9 +93,8 @@ class LoginActivity : AppCompatActivity()
             btnRegister.visibility = View.VISIBLE
         }
     }
-    private fun login()
+    fun login(view: View)
     {
-
         if (rdbGoogle.isChecked )
         {
             if (SingletonLogin.authGoogle != null)
@@ -116,37 +107,31 @@ class LoginActivity : AppCompatActivity()
         {
             if (SingletonLogin.authMail != null)
             {
-                SingletonLogin.authMail!!.signInWithEmailAndPassword(
-                    txtUser.text.toString(),
-                    txtPassword.text.toString()
-                )
+                SingletonLogin.authMail!!.signInWithEmailAndPassword(txtUser.text.toString(), txtPassword.text.toString() )
                     .addOnCompleteListener(this)
                     { task ->
                         if (task.isSuccessful)
                         {
-                            validateLogin()
+                            //validateLogin()
+                            if (SingletonLogin.isLogged())
+                                moveToMainMenu()
                         }
                         else
                         {
-                            Toast.makeText(
-                                this,
-                                "No fue posible realizar el inicio de sesión",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            //Toast.makeText(this,"No fue posible realizar el inicio de sesión", Toast.LENGTH_LONG).show()
+                            Snackbar.make(view, "No fue posible realizar el inicio de sesión", Snackbar.LENGTH_LONG)
                         }
                     }
 
             }
         }
     }
-    private fun validateLogin()
+    /*private fun validateLogin()
     {
         if (SingletonLogin.isLogged())
-        {
             moveToMainMenu()
-        }
-    }
-    private fun register()
+    }*/
+    fun register(view: View)
     {
         if (SingletonLogin.authMail == null)
         {
@@ -156,15 +141,14 @@ class LoginActivity : AppCompatActivity()
         {
             if (SingletonLogin.authMail != null)
             {
-                SingletonLogin.authMail!!.createUserWithEmailAndPassword(
-                    txtUser.text.toString(),
-                    txtPassword.text.toString()
-                )
+                SingletonLogin.authMail!!.createUserWithEmailAndPassword(txtUser.text.toString(),txtPassword.text.toString())
                     .addOnCompleteListener(this)
                     { task ->
                         if (task.isSuccessful)
                         {
-                            validateLogin()
+                            //validateLogin()
+                            if (SingletonLogin.isLogged())
+                                moveToMainMenu()
                         }
                         else
                         {
@@ -181,7 +165,7 @@ class LoginActivity : AppCompatActivity()
 
     private fun moveToMainMenu()
     {
-        var intent = Intent(this.applicationContext, MainMenuActivity::class.java)
+        val intent = Intent(this.applicationContext, MainMenuActivity::class.java)
         startActivity(intent)
     }
 
@@ -189,10 +173,7 @@ class LoginActivity : AppCompatActivity()
     {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == RC_SIGN_IN)
-        {
-            validateLogin()
-        }
-
+        if (requestCode == RC_SIGN_IN && SingletonLogin.isLogged())
+            moveToMainMenu()
     }
 }

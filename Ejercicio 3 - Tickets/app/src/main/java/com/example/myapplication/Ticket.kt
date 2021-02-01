@@ -21,12 +21,13 @@ class Ticket()
 
     private val fileExtention = ".jpg"
 
-    var date: String = ""
-    var amount: Double = 0.0
+    var date: String? = null
+    var amount: Double? = 0.0
     var photo: Bitmap? = null
-    var created: String = ""
+    var created: String? = null
     var context: Context? = null
-    var path: String = ""
+    var path: String? = null
+    var url: String = ""
 
     constructor(date: String, amount: Double, photo: Bitmap, created: String, context: Context): this()
     {
@@ -35,6 +36,14 @@ class Ticket()
         this.photo = photo
         this.created = created
         this.context = context
+    }
+    constructor(date: String?, amount: Double?, created: String?, path: String?, url: String): this()
+    {
+        this.date = date
+        this.amount = amount
+        this.created = created
+        this.path = path
+        this.url = url
     }
 
     fun registerTicket(): Boolean
@@ -49,13 +58,10 @@ class Ticket()
             photo!!.compress(Bitmap.CompressFormat.JPEG, 100, baos)
             val data = baos.toByteArray()
             // Create file metadata including the content type
-            /*val metadata = storageMetadata {
-                setCustomMetadata("id", "filmId")
-            }*/
             val metaData = StorageMetadata.Builder()
-                    .setCustomMetadata(Ticket.DATE, date)
-                    .setCustomMetadata(Ticket.AMOUNT, amount.toString())
-                    .setCustomMetadata(Ticket.CREATED, created)
+                    .setCustomMetadata(DATE, date)
+                    .setCustomMetadata(AMOUNT, amount.toString())
+                    .setCustomMetadata(CREATED, created)
                     .build()
 
             var uploadTask = storageRef!!.child(filePath).putBytes(data, metaData)
@@ -81,10 +87,14 @@ class Ticket()
             return false
         }
     }
+
+    fun getStringData() = "Fecha: " + date + " - Monto; " + amount + " - Registrado el: " + created
+
     private  fun getFilePath(): String
     {
-        var ret = SingletonLogin.getUserId() + "/Tickets/"
-        return ret
+        /*var ret = SingletonLogin.getUserId() + "/Tickets/"
+        return ret*/
+        return  SingletonLogin.getUserId() + "/Tickets/"
     }
     private fun getFileName(): String
     {
@@ -96,27 +106,12 @@ class Ticket()
 
     fun getTicketList(): StorageReference
     {
-        val filePath = getFilePath()
-        var storageRef = FirebaseStorage.getInstance().getReference();
-        var childe = storageRef.child(filePath)
-        return childe
-
-        // Find all the prefixes and items.
-        /*
-        childe.listAll()
-                .addOnSuccessListener { it ->
-
-                    for (item in it.items)
-                    {
-                        Log.i("dea_items_parent", item.parent.toString() )
-                        Log.i("dea_items_name", item.name )
-                    }
-
-
-                }
-         */
-
-
+        /*val filePath = getFilePath()
+        val storageRef = FirebaseStorage.getInstance().getReference();
+        val childe = storageRef.child(filePath)
+        return childe*/
+        val storageRef = FirebaseStorage.getInstance().reference;
+        return storageRef.child(getFilePath())
     }
 
 

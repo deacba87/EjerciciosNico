@@ -13,7 +13,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Perfil"
+        android:onClick="moveToProfile"
+        android:text="@string/perfil"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,7 +26,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="10dp"
-        android:text="Registrar Ticket"
+        android:onClick="moveToRegisterTicket"
+        android:text="@string/registrar_ticket"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnProfile" />
@@ -37,7 +39,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Historial"
+        android:onClick="moveToHistory"
+        android:text="@string/historial"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnRegisterTicket" />
@@ -49,7 +52,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:text="Cerrar sesión"
+        android:onClick="logOut"
+        android:text="@string/cerrar_sesi_n"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnHistory" />

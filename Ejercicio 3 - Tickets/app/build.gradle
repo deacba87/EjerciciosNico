@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-android-extensions'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     //id 'com.google.firebase.storage.ktx.component1'
@@ -72,4 +73,5 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-storage:19.1.1'
 
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }

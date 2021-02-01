@@ -43,7 +43,6 @@ object SingletonLogin
 
     private fun isLoggedGoogle(): Boolean
     {
-
         if (context == null)
         {
             return false
