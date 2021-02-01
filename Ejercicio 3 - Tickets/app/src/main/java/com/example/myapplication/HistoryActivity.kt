@@ -11,6 +11,8 @@ import android.widget.ListView
 import android.widget.Toast
 import com.google.firebase.storage.FirebaseStorage
 import android.widget.AdapterView.OnItemClickListener
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myapplication.R.string.*
 import kotlinx.android.synthetic.main.activity_history.*
 import java.lang.Exception
 import java.text.FieldPosition
@@ -18,7 +20,7 @@ import java.text.FieldPosition
 
  class HistoryActivity : AppCompatActivity()
 {
-    //
+    /*
     private val MODE_EDIT: String = "EDIT"
     private val URL_IMG: String = "URL_IMG"
     private val TYPEDISPLAY: String = "TYPE_DISPLAY"
@@ -26,22 +28,27 @@ import java.text.FieldPosition
     private val TICKET_AMOUNT: String = "TICKET_AMOUNT"
     private val TICKET_CREATED: String = "TICKET_CREATED"
     private val TICKET_PATH: String = "TICKET_PATH"
-    //
+    */
 
     private var lstTicketsObject= mutableListOf<Ticket>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
+        title = "Historial"
 
         //lstHistoryTickets = findViewById(R.id.lstHistoryTickets4)
         //lstHistoryTickets.setOnClickListener(View.OnClickListener { onClickListenerlstHistoryTickets() })
-        lstHistoryTickets.setOnItemClickListener { arg0, arg1, position, arg3 -> onClickListenerlstHistoryTickets(position) }
+        //lstHistoryTickets.setOnItemClickListener { arg0, arg1, position, arg3 -> onClickListenerlstHistoryTickets(position) }
+
+        rcv_history_tickets.setHasFixedSize(true)
+        rcv_history_tickets.layoutManager = LinearLayoutManager(this)
+        //rcv_history_tickets.adapter = HistoryTicketRowAdapter(lstTicketsObject)
 
         //Toast.makeText(this, "Alona", Toast.LENGTH_SHORT).show()
         loadHistoryTickets()
     }
-    private fun onClickListenerlstHistoryTickets(position: Int)
+    /*private fun onClickListenerlstHistoryTickets(position: Int)
     {
         var intent = Intent(this.applicationContext, RegusterTicketActivity::class.java)
         try
@@ -49,23 +56,24 @@ import java.text.FieldPosition
             val obj = lstTicketsObject[position]
             if (obj != null)
             {
-                intent.putExtra(TYPEDISPLAY, MODE_EDIT)
-                intent.putExtra(URL_IMG, obj.url)
-                intent.putExtra(TICKET_DATE, obj.date)
-                intent.putExtra(TICKET_AMOUNT, obj.amount.toString())
-                intent.putExtra(TICKET_CREATED, obj.created)
-                intent.putExtra(TICKET_PATH, obj.path)
+                with(intent)
+                {
+                    putExtra(TYPEDISPLAY.toString(), MODE_EDIT.toString())
+                    putExtra(URL_IMG.toString(), obj.url)
+                    putExtra(TICKET_DATE.toString(), obj.date)
+                    putExtra(TICKET_AMOUNT.toString(), obj.amount.toString())
+                    putExtra(TICKET_CREATED.toString(), obj.created)
+                    putExtra(TICKET_PATH.toString(), obj.path)
 
-                startActivity(intent)
+                    startActivity(this)
+                }
             }
         }
         catch (e: Exception)
         {
 
         }
-
-
-    }
+    }*/
 
     private fun loadHistoryTickets()
     {
@@ -78,10 +86,12 @@ import java.text.FieldPosition
                 .addOnSuccessListener { it ->
 
                     var text = ""
-
+                    var pos = 0
                     for (item in it.items)
                     {
-                        text = item.parent.toString() +"/" + item.name
+                        pos ++
+                        //text = item.parent.toString() +"/" + item.name
+                        text = "${item.parent.toString()}/${item.name}"
                         /*Log.i("dea1", item.path)
                         Log.i("dea2", item.name)
                         Log.i("dea3", item.bucket)
@@ -89,8 +99,15 @@ import java.text.FieldPosition
                         Log.i("dea5", item.downloadUrl.toString())
                         Log.i("dea6", item.metadata.toString())
                         Log.i("dea7", item.root.toString())*/
+                        Toast.makeText(this, "$pos de ${it.items.size}", Toast.LENGTH_SHORT).show()
                         getTicketInfo(text, item.path)
                     }
+                    Toast.makeText(this, "Termino", Toast.LENGTH_SHORT).show()
+
+
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
                 }
     }
     private fun getTicketInfo(pUrl: String, pName: String)
@@ -109,13 +126,13 @@ import java.text.FieldPosition
 
             val ticket = Ticket(date, amount?.toDouble(), created, pName, pUrl )
 
-            val texto = ticket.getStringData()
-
-            lstTicketsText.add(texto)
+            /*val texto = ticket.getStringData()
+            lstTicketsText.add(texto)*/
             lstTicketsObject.add(ticket)
+            rcv_history_tickets.adapter = HistoryTicketRowAdapter(lstTicketsObject)
 
-            var adapter = ArrayAdapter(this@HistoryActivity, android.R.layout.simple_list_item_1, lstTicketsText)
-            lstHistoryTickets.adapter = adapter
+            /*var adapter = ArrayAdapter(this@HistoryActivity, android.R.layout.simple_list_item_1, lstTicketsText)
+            lstHistoryTickets.adapter = adapter*/
 
         }.addOnFailureListener {
             Log.e("dea", it.toString())

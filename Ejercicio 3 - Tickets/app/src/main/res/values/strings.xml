@@ -18,11 +18,11 @@
     <string name="monto_del_ticket">Monto del ticket</string>
     <string name="foto_del_ticket">Foto del ticket</string>
     <string name="guardar_ticket">Guardar ticket</string>
+    <string name="fecha">Fecha</string>
+    <string name="monto">Monto</string>
 
-    <string name="MODE_REGISTER">REGISTER</string>
     <string name="TYPEDISPLAY">TYPE_DISPLAY</string>
-
-
+    <string name="MODE_REGISTER">REGISTER</string>
     <string name="MODE_DISPLAY">DISPLAY</string>
     <string name="MODE_EDIT">EDIT</string>
     <string name="URL_IMG">URL_IMG</string>
@@ -30,6 +30,5 @@
     <string name="TICKET_AMOUNT">TICKET_AMOUNT</string>
     <string name="TICKET_CREATED">TICKET_CREATED</string>
     <string name="TICKET_PATH">TICKET_PATH</string>
-
 
 </resources>

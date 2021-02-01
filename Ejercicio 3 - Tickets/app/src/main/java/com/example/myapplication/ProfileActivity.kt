@@ -76,7 +76,7 @@ class ProfileActivity : AppCompatActivity()
         val imgUri: String? = SingletonLogin.getUserPhoto()
         if (imgUri != null)
         {
-            /*val storage = FirebaseStorage.getInstance()
+            val storage = FirebaseStorage.getInstance()
 
             val gsReference = storage.getReferenceFromUrl(imgUri)
             val ONE_MEGABYTE: Long = 1024 * 1024
@@ -88,11 +88,11 @@ class ProfileActivity : AppCompatActivity()
 
             }.addOnFailureListener {
                 Log.e("dea_addOnFailureListener", it.message.toString())
-            }*/
-            if (imgProfilePicture != null)
+            }
+            /*if (imgProfilePicture != null)
             {
                 Picasso.get().load(Uri.parse(imgUri)).into(imgProfilePicture);
-            }
+            }*/
 
         }
 
@@ -113,7 +113,7 @@ class ProfileActivity : AppCompatActivity()
         intent.type = "image/*"
         intent.action = Intent.ACTION_GET_CONTENT
 
-        val imgChooser = Intent.createChooser(intent, "Selecciona un ticket")
+        val imgChooser = Intent.createChooser(intent, "Selecciona una foto")
         startActivityForResult(imgChooser, IMG_REQUEST)
 
     }
@@ -194,7 +194,7 @@ class ProfileActivity : AppCompatActivity()
             bitmap?.let {
                 //imgProfilePicture.setImageBitmap(bitmap)
                 bitmapProfilePicture = it
-                imgProfilePicture.setImageBitmap(it)
+                imgProfilePicture?.setImageBitmap(it)
             }
 
         }
