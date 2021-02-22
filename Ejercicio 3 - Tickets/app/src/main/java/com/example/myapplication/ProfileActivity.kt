@@ -1,43 +1,35 @@
 package com.example.myapplication
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.auth.api.signin.internal.Storage
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
-import kotlinx.android.synthetic.main.activity_reguster_ticket.*
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.lang.Exception
-import java.net.URL
 
 
 class ProfileActivity : AppCompatActivity()
 {
     /*--------------------------------------------------------------------------------------------*/
+    private val TAG = "deacba"
     private val CAMERA_PERMISSION_CODE:Int = 100
     private val IMG_REQUEST: Int = 1
     /*--------------------------------------------------------------------------------------------*/
     private var mStorageRef: StorageReference? = null
     private var bitmapProfilePicture: Bitmap? ? = null
-    /*--------------------------------------------------------------------------------------------*/
-    /*private lateinit var txtProfileName: EditText
-    private lateinit var imgProfilePicture: ImageView
-    private lateinit var btnProfileSelectPicture : Button
-    private lateinit var btnProfileSaveChanges: Button*/
+    private var user: User? = null
     /*--------------------------------------------------------------------------------------------*/
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -48,7 +40,7 @@ class ProfileActivity : AppCompatActivity()
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
         if (bitmapProfilePicture != null)
-            imgProfilePicture.setImageBitmap(bitmapProfilePicture)
+            img_profile_picture.setImageBitmap(bitmapProfilePicture)
 
     }
     /*private fun setElements()
@@ -64,37 +56,71 @@ class ProfileActivity : AppCompatActivity()
     }*/
     private fun updateLayout()
     {
-        if (SingletonLogin.isEditableName())
+        if (SLogin.isEditableName())
         {
-            txtProfileName.setText(SingletonLogin.getUserName(), TextView.BufferType.EDITABLE)
+            txt_profile_name.setText(SLogin.getUserName(), TextView.BufferType.EDITABLE)
         }
         else
         {
-            txtProfileName.setText(SingletonLogin.getUserName(), TextView.BufferType.NORMAL)
+            txt_profile_name.setText(SLogin.getUserName(), TextView.BufferType.NORMAL)
         }
 
-        val imgUri: String? = SingletonLogin.getUserPhoto()
-        if (imgUri != null)
-        {
-            val storage = FirebaseStorage.getInstance()
+        //val userId = SLogin.getUserId()
+        val fbDB = FirebaseDatabase.getInstance().getReference(BdText.TB_USER)
+        // Read from the database
 
-            val gsReference = storage.getReferenceFromUrl(imgUri)
-            val ONE_MEGABYTE: Long = 1024 * 1024
-            gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener {
-                // Data for "images/island.jpg" is returned, use this as needed
+        Log.i(TAG, "Loading")
+        //val progressBar = ProgressDialog.show(this.applicationContext, "", "Loading...", true)
+        val loadingDialog = LoadingDialog(this)
+        loadingDialog.startLoadingAnimation()
+        fbDB.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                //progressBar.dismiss()
+                //var value = dataSnapshot.childrenCount
+                //val userId = SLogin.getUserId()
 
-                val bitm = BitmapFactory.decodeByteArray(it, 0, it.size)
-                imgProfilePicture.setImageBitmap(bitm)
+                val userDb = dataSnapshot.child(SLogin.getUserId())
+                //val userName = userDb.child(BdText.COL_NAME)
 
-            }.addOnFailureListener {
-                Log.e("dea_addOnFailureListener", it.message.toString())
+                user = User( SLogin.getUserId(),
+                             userDb.child(BdText.COL_EMAIL).value.toString(),
+                             userDb.child(BdText.COL_NAME).value.toString(),
+                             userDb.child(BdText.COL_PASSWORD).value.toString(),
+                             userDb.child(BdText.COL_PPICTURE).value.toString() )
+
+                txt_profile_name.setText(user!!.name)
+
+                val imgUri = user!!.profilePicture
+                if (imgUri.isNotEmpty())
+                {
+                    val storage = FirebaseStorage.getInstance()
+
+                    val gsReference = storage.getReferenceFromUrl(imgUri)
+                    val ONE_MEGABYTE: Long = 1024 * 1024
+                    gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener {
+                        // Data for "images/island.jpg" is returned, use this as needed
+                        val bitm = BitmapFactory.decodeByteArray(it, 0, it.size)
+                        img_profile_picture.setImageBitmap(bitm)
+                        loadingDialog.dismissDialog()
+
+                    }.addOnFailureListener {
+                        Log.e(TAG, it.message.toString())
+                        loadingDialog.dismissDialog()
+                    }
+                }
+                else
+                {
+                    loadingDialog.dismissDialog()
+                }
             }
-            /*if (imgProfilePicture != null)
-            {
-                Picasso.get().load(Uri.parse(imgUri)).into(imgProfilePicture);
-            }*/
 
-        }
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+                loadingDialog.dismissDialog()
+                Log.e(TAG, "Failed to read value.", error.toException())
+            }
+        })
+
 
     }
     fun onClickProfileSelectPicture(view: View)
@@ -119,8 +145,13 @@ class ProfileActivity : AppCompatActivity()
     }
     fun onClickProfileSaveChanges(view: View)
     {
-        SingletonLogin.saveUserProfile(txtProfileName.text.toString())
-        updateProfilePicture()
+        if (user!=null)
+        {
+            user!!.name = txt_profile_name.text.toString()
+            SLogin.saveUserProfile(user!!.name, this.applicationContext)
+            saveUser()
+            updateProfilePicture()
+        }
     }
 
     private fun updateProfilePicture()
@@ -128,12 +159,12 @@ class ProfileActivity : AppCompatActivity()
 
         // Create a reference to "mountains.jpg"
         //val perfilRef = mStorageRef!!.child("perfil3.jpg")
-        val bitmap = (imgProfilePicture.drawable as BitmapDrawable).bitmap
+        val bitmap = (img_profile_picture.drawable as BitmapDrawable).bitmap
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
         val data = baos.toByteArray()
 
-        var uploadTask = mStorageRef!!.child(SingletonLogin.getUserProfilePhotoPath()).putBytes(data)
+        var uploadTask = mStorageRef!!.child(SLogin.getUserProfilePhotoPath()).putBytes(data)
         uploadTask
                 .addOnFailureListener{
                     Toast.makeText(this, it.message.toString(), Toast.LENGTH_LONG).show()
@@ -153,9 +184,30 @@ class ProfileActivity : AppCompatActivity()
     }
     private fun saveProfilePicture()
     {
-        val child = mStorageRef!!.child(SingletonLogin.getUserProfilePhotoPath())
+        val child = mStorageRef!!.child(SLogin.getUserProfilePhotoPath())
         val url = child.parent.toString() + "/" + child.name
-        SingletonLogin.saveUserPhoto(url)
+        SLogin.saveUserPhoto(url)
+        if (user!= null)
+        {
+            user!!.profilePicture = url
+            saveUser()
+        }
+    }
+    private fun saveUser()
+    {
+        if (user!= null)
+        {
+            val fbDB = FirebaseDatabase.getInstance().reference.child(BdText.TB_USER).child(user!!.id)
+            fbDB.setValue(user!!.toHashMap()).addOnCompleteListener{
+                if (it.isSuccessful)
+                {
+                    Toast.makeText(this, "Usuario actualizado", Toast.LENGTH_LONG).show()
+                }
+                else
+                    Toast.makeText(this, "Usuario NO actualizado", Toast.LENGTH_LONG).show()
+
+            }
+        }
     }
 
     /*@Override
@@ -194,7 +246,7 @@ class ProfileActivity : AppCompatActivity()
             bitmap?.let {
                 //imgProfilePicture.setImageBitmap(bitmap)
                 bitmapProfilePicture = it
-                imgProfilePicture?.setImageBitmap(it)
+                img_profile_picture?.setImageBitmap(it)
             }
 
         }

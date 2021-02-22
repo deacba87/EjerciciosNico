@@ -94,7 +94,7 @@ class Ticket()
     {
         /*var ret = SingletonLogin.getUserId() + "/Tickets/"
         return ret*/
-        return  SingletonLogin.getUserId() + "/Tickets/"
+        return  SLogin.getUserId() + "/Tickets/"
     }
     private fun getFileName(): String
     {

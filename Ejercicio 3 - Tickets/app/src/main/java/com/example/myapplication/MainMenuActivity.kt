@@ -4,8 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.Toast
 import com.example.myapplication.R.string.MODE_REGISTER
 import com.example.myapplication.R.string.TYPEDISPLAY
 import com.google.android.material.snackbar.Snackbar
@@ -43,7 +41,7 @@ class MainMenuActivity : AppCompatActivity()
     fun logOut(view: View)
     {
         //SingletonLogin.logOut()
-        if (SingletonLogin.logOut())
+        if (SLogin.logOut())
             moveToLogin()
         else
             Snackbar.make(view, "No se pudo desloguear", Snackbar.LENGTH_LONG)

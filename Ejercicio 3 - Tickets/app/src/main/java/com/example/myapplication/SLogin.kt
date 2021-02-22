@@ -1,6 +1,6 @@
 package com.example.myapplication
 
-import android.R
+//import android.R
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -8,32 +8,32 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+//import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 
-object SingletonLogin
+object SLogin
 {
     /* Atributos */
-    var authMail: FirebaseAuth?
-    var authGoogle: GoogleSignInClient?
-    var context: Context?
+    var authMail: FirebaseAuth? = null
+    var authGoogle: GoogleSignInClient? = null
+    //var context: Context? = null
 
     private var userGoogle: GoogleSignInAccount? = null
     private var userMail: FirebaseUser? = null
     private var loginType: LoginType? = null
 
-    init
+    /*init
     {
         authMail = null
         authGoogle = null
         context = null
-    }
+    }*/
     /* Metodos */
-    fun isLogged(): Boolean
+    fun isLogged(context: Context): Boolean
     {
-        var logged: Boolean = isLoggedGoogle()
+        var logged: Boolean = isLoggedGoogle(context)
         if (!logged)
         {
             logged = isLoggedMail()
@@ -41,7 +41,7 @@ object SingletonLogin
         return logged
     }
 
-    private fun isLoggedGoogle(): Boolean
+    private fun isLoggedGoogle(context: Context): Boolean
     {
         if (context == null)
         {
@@ -245,19 +245,19 @@ object SingletonLogin
          return userMail?.photoUrl.toString()
     }
 
-    fun saveUserProfile(pName: String)
+    fun saveUserProfile(pName: String, context: Context)
     {
         when(loginType)
         {
             LoginType.GOOGLE -> saveUserProfileGoogle()
-            LoginType.MAIL -> saveUserProfileMail(pName)
+            LoginType.MAIL -> saveUserProfileMail(pName, context)
         }
     }
     private fun saveUserProfileGoogle()
     {
 
     }
-    private fun saveUserProfileMail(pName: String)
+    private fun saveUserProfileMail(pName: String, context: Context)
     {
         //val user = Firebase.auth.currentUser
         val profileUpdates = userProfileChangeRequest {

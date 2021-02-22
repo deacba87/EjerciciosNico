@@ -3,12 +3,14 @@ package com.example.myapplication
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_login.*
 
 
@@ -31,7 +33,9 @@ class LoginActivity : AppCompatActivity()
         setContentView(R.layout.activity_login)
 
         //init_elements()
-        rdbGoogle.isChecked = true
+        //rdbGoogle.isChecked = true
+        rdbGoogle.visibility = View.GONE
+        rdbMail.isChecked = true
         //init_handlers()
         initLogin()
         updateLayout(rdbGoogle)
@@ -40,7 +44,7 @@ class LoginActivity : AppCompatActivity()
     override fun onResume()
     {
         super.onResume()
-        if (SingletonLogin.isLogged())
+        if (SLogin.isLogged(this.applicationContext))
             moveToMainMenu()
     }
 
@@ -56,15 +60,15 @@ class LoginActivity : AppCompatActivity()
 
     private fun initLogin()
     {
-        SingletonLogin.context = this
+        //SingletonLogin.context = this
         // Google Auth *****************************************************************************
         val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .build()
         // Build a GoogleSignInClient with the options specified by gso.
-        SingletonLogin.authGoogle = GoogleSignIn.getClient(this, gso)
+        SLogin.authGoogle = GoogleSignIn.getClient(this, gso)
         // Mail Auth *******************************************************************************
-        SingletonLogin.authMail = FirebaseAuth.getInstance()
+        SLogin.authMail = FirebaseAuth.getInstance()
     }
 
     /*private fun init_handlers()
@@ -97,23 +101,23 @@ class LoginActivity : AppCompatActivity()
     {
         if (rdbGoogle.isChecked )
         {
-            if (SingletonLogin.authGoogle != null)
+            if (SLogin.authGoogle != null)
             {
-                val signInIntent =  SingletonLogin.authGoogle!!.signInIntent
+                val signInIntent =  SLogin.authGoogle!!.signInIntent
                 startActivityForResult(signInIntent, RC_SIGN_IN)
             }
         }
         else if (rdbMail.isChecked)
         {
-            if (SingletonLogin.authMail != null)
+            if (SLogin.authMail != null)
             {
-                SingletonLogin.authMail!!.signInWithEmailAndPassword(txtUser.text.toString(), txtPassword.text.toString() )
+                SLogin.authMail!!.signInWithEmailAndPassword(txtUser.text.toString().trim(), txtPassword.text.toString().trim() )
                     .addOnCompleteListener(this)
                     { task ->
                         if (task.isSuccessful)
                         {
                             //validateLogin()
-                            if (SingletonLogin.isLogged())
+                            if (SLogin.isLogged(this.applicationContext))
                                 moveToMainMenu()
                         }
                         else
@@ -133,32 +137,58 @@ class LoginActivity : AppCompatActivity()
     }*/
     fun register(view: View)
     {
-        if (SingletonLogin.authMail == null)
+        if (SLogin.authMail == null)
         {
             Toast.makeText(this, "No es posible registrase", Toast.LENGTH_LONG).show()
         }
         else
         {
-            if (SingletonLogin.authMail != null)
+            if (SLogin.authMail != null)
             {
-                SingletonLogin.authMail!!.createUserWithEmailAndPassword(txtUser.text.toString(),txtPassword.text.toString())
-                    .addOnCompleteListener(this)
-                    { task ->
-                        if (task.isSuccessful)
-                        {
-                            //validateLogin()
-                            if (SingletonLogin.isLogged())
-                                moveToMainMenu()
+                val email =  txtUser.trimText() //txtUser.text.toString().trim()
+                val password = txtPassword.trimText() //txtPassword.text.toString().trim()
+
+                if ( email != null && email.isNotEmpty() &&
+                     password != null && password.isNotEmpty())
+                {
+                    SLogin.authMail!!.createUserWithEmailAndPassword(email,password)
+                        .addOnCompleteListener(this)
+                        { task ->
+                            if (task.isSuccessful)
+                            {
+                                if (SLogin.isLogged(this.applicationContext))
+                                {
+                                    val id = SLogin.getUserId()
+                                    val user = User(id, email, password)
+                                    val fbDB = FirebaseDatabase.getInstance().reference.child(BdText.TB_USER).child(id)
+                                    fbDB.setValue(user.toHashMap()).addOnCompleteListener{
+                                        if (it.isSuccessful)
+                                        {
+                                            Toast.makeText(this, "Usuario creado", Toast.LENGTH_LONG).show()
+                                            moveToMainMenu()
+                                        }
+                                        else
+                                            Toast.makeText(this, "Usuario NO creado", Toast.LENGTH_LONG).show()
+
+                                    }
+
+                                }
+
+                            }
+                            else
+                            {
+
+                                Toast.makeText(
+                                    this,
+                                    "No fue posible realizar el registro",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
-                        else
-                        {
-                            Toast.makeText(
-                                this,
-                                "No fue posible realizar el registro",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
+
+                }
+
+
             }
         }
     }
@@ -167,13 +197,16 @@ class LoginActivity : AppCompatActivity()
     {
         val intent = Intent(this.applicationContext, MainMenuActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
     {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == RC_SIGN_IN && SingletonLogin.isLogged())
+        if (requestCode == RC_SIGN_IN && SLogin.isLogged(this.applicationContext))
             moveToMainMenu()
     }
 }
+
+fun EditText.trimText() = this.text.toString().trim()

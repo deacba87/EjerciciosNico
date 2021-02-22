@@ -30,5 +30,6 @@
     <string name="TICKET_AMOUNT">TICKET_AMOUNT</string>
     <string name="TICKET_CREATED">TICKET_CREATED</string>
     <string name="TICKET_PATH">TICKET_PATH</string>
+    <string name="cargando">Cargando...</string>
 
 </resources>
