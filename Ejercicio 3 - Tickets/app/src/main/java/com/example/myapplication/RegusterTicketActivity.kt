@@ -14,17 +14,24 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.R.string.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_profile.*
 import kotlinx.android.synthetic.main.activity_reguster_ticket.*
 import java.lang.Exception
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class RegusterTicketActivity : AppCompatActivity()
 {
+    private val TAG = "dea_RegusterTicketActivity"
     /*-------------------------------------------------------------------------------------------*/
     private val CAMERA_PERMISSION_CODE:Int = 100
     private val IMG_REQUEST: Int = 1
@@ -41,6 +48,7 @@ class RegusterTicketActivity : AppCompatActivity()
     private var ticketPhoto: Bitmap? = null
     private var typeDisplay: String? = ""
     private var storageRefChild: String = ""
+    private var ticketDisplay: Ticket = Ticket()
     /*-------------------------------------------------------------------------------------------*/
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -52,6 +60,7 @@ class RegusterTicketActivity : AppCompatActivity()
         Toast.makeText(this, "typeDisplay", Toast.LENGTH_SHORT)
         if (typeDisplay == MODE_REGISTER.toString())
         {
+            ticketDisplay.resetData()
             setModeRegister()
             Toast.makeText(this, "typeDisplay MODE_REGISTER", Toast.LENGTH_SHORT)
         }
@@ -59,13 +68,17 @@ class RegusterTicketActivity : AppCompatActivity()
         {
             Toast.makeText(this, "typeDisplay MODE_EDIT", Toast.LENGTH_SHORT)
             setModeEdit()
-            val url = intent.getStringExtra(URL_IMG.toString()).toString()
+            ticketDisplay.id = intent.getStringExtra(ID_TICKET.toString()).toString()
+            ticketDisplay.url = intent.getStringExtra(URL_IMG.toString()).toString()
             //storageRefChild = url
             //val date = intent.getStringExtra(TICKET_DATE).toString()
-            val date = intent.getStringExtra(TICKET_DATE.toString()).toString()
-            val amount = intent.getStringExtra(TICKET_AMOUNT.toString()).toString()
+            ticketDisplay.date = intent.getStringExtra(TICKET_DATE.toString()).toString()
+            ticketDisplay.amount = intent.getStringExtra(TICKET_AMOUNT.toString()).toString().toDouble()
+
+            Log.i(TAG, "Ticket ID = ${ticketDisplay.id}")
+
             storageRefChild = intent.getStringExtra(TICKET_PATH.toString()).toString()
-            loadTicketInfo(url, date, amount)
+            loadTicketInfo(ticketDisplay.url, ticketDisplay.date, ticketDisplay.amount.toString())
         }
         else(typeDisplay == null)
         {
@@ -89,10 +102,11 @@ class RegusterTicketActivity : AppCompatActivity()
                 // Data for "images/island.jpg" is returned, use this as needed
 
                 val bitm = BitmapFactory.decodeByteArray(it, 0, it.size)
+                ticketPhoto = bitm
                 imgRegTicketPhoto.setImageBitmap(bitm)
 
             }.addOnFailureListener {
-                Log.e("dea_addOnFailureListener", it.message.toString())
+                Log.e(TAG, it.message.toString())
             }
             /*if (imgRegTicketPhoto != null)
             {
@@ -107,7 +121,7 @@ class RegusterTicketActivity : AppCompatActivity()
         }
         else
         {
-            Log.e("daacba", "imgUri == null")
+            Log.e(TAG, "imgUri == null")
             Toast.makeText(this, "imgUri == null" , Toast.LENGTH_SHORT)
         }
     }
@@ -135,7 +149,18 @@ class RegusterTicketActivity : AppCompatActivity()
             val newFragment = DatePickerFragment.newListenerInstance(DatePickerDialog.OnDateSetListener
                 { view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
                     //val selectedDate = dayOfMonth.toString() + "/" + (month + 1) + "/" + year
-                    val selectedDate = "${dayOfMonth}/${(month + 1)}/$year"
+                    /*val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    calendar.set(Calendar.MONTH, month)
+                    calendar.set(Calendar.YEAR, year)*/
+                    val dt = LocalDate.of(year, month, dayOfMonth)
+                    val selectedDate = dt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+
+
+                    //LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    //val selectedDate = "${dayOfMonth}/${(month + 1)}/$year"
+
+
                     txtRegTicketDate.setText(selectedDate)
                 }
             )
@@ -157,27 +182,71 @@ class RegusterTicketActivity : AppCompatActivity()
             }
         }*/
 
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
+        if(typeDisplay == MODE_REGISTER.toString()) {
 
-        val imgChooser = Intent.createChooser(intent, "Selecciona un ticket")
-        startActivityForResult(imgChooser, IMG_REQUEST)
+            val intent = Intent()
+            intent.type = "image/*"
+            intent.action = Intent.ACTION_GET_CONTENT
+
+            val imgChooser = Intent.createChooser(intent, "Selecciona un ticket")
+            startActivityForResult(imgChooser, IMG_REQUEST)
+        }
 
     }
     fun onClickbtnRegTicketRegister(view: View)
     {
-
         if (typeDisplay == MODE_REGISTER.toString())
         {
+
             registerTicket()
             defaultValueFields()
         }
         else if(typeDisplay == MODE_EDIT.toString())
         {
-            saveTicket()
-            Toast.makeText(this, "Datos actualizados", Toast.LENGTH_LONG)
+            updateTicket()
         }
+    }
+
+    private fun validateTicketCreation(ticket: Ticket)
+    {
+        val loadingDialog = LoadingDialog(this)
+        loadingDialog.startLoadingAnimation()
+
+        var crear = true
+        var date_created = ""
+        val userTicketsBd = FirebaseDatabase.getInstance().getReference(BdText.TB_TICKETS).child(SLogin.getUserId())
+        userTicketsBd.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                if (crear)
+                {
+                    crear = false
+
+                    for (row in snapshot.children)
+                    {
+                        date_created = row.child(BdText.COL_CREATED).value.toString()
+                    }
+
+                    /***/
+                    if (ticket.registerTicket())
+                    {
+                        registerTicketDb(ticket, loadingDialog)
+                    }
+                    else
+                    {
+                        loadingDialog.dismissDialog()
+                        Log.i(TAG, "Ticket NO validado.")
+                    }
+                    /***/
+                }
+
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     private fun registerTicket()
@@ -187,33 +256,57 @@ class RegusterTicketActivity : AppCompatActivity()
             ticketPhoto == null )
         {
             Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_LONG)
+            Log.i(TAG, "Complete todos los campos")
         }
         else
         {
-            val date = txtRegTicketDate.text.toString()
+            /*val date = txtRegTicketDate.text.toString()
             val amount = txtRegTicketAmount.text.toString().toDouble()
             val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-            val ticket = Ticket(date, amount, ticketPhoto!!, today, applicationContext)
+            val ticket = Ticket(date, amount, ticketPhoto!!, today, applicationContext, SLogin.getUserId())*/
+            val ticket = Ticket(
+                    txtRegTicketDate.text.toString(),
+                    txtRegTicketAmount.text.toString().toDouble(),
+                    ticketPhoto!!,
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    applicationContext,
+                    SLogin.getUserId())
 
-            if (amount > 0)
+
+            if (ticket.amount > 0)
             {
-                Toast.makeText(this, "Pre-registrado", Toast.LENGTH_LONG).show()
-                if (ticket.registerTicket())
-                {
-                    Toast.makeText(this, "Ticket pre-registrado", Toast.LENGTH_LONG).show()
-                }
-                else
-                {
-                    Toast.makeText(this, "Ticket fallo en pre-registrado", Toast.LENGTH_LONG).show()
-                }
+                validateTicketCreation(ticket)
             }
             else
             {
+                Log.i(TAG, "Ingresar monto mayor a cero")
                 Toast.makeText(this, "Ingresar monto mayor a cero", Toast.LENGTH_LONG).show()
             }
         }
     }
-    private fun saveTicket()
+
+    private fun registerTicketDb(ticket: Ticket, loadingDialog: LoadingDialog)
+    {
+        /*Log.i(TAG, "UserId ${ticket.userid}")
+        Log.i(TAG, "Path ${ticket.path}")
+        Log.i(TAG, "Created ${ticket.created}")
+        Log.i(TAG, "Amount ${ticket.amount}")
+        Log.i(TAG, "Date ${ticket.date}")
+        Log.i(TAG, "Url ${ticket.url}")*/
+
+        val fbDB = FirebaseDatabase.getInstance().reference.child(BdText.TB_TICKETS).child(ticket.userid).push()
+        fbDB.setValue(ticket.toHashMap("")).addOnCompleteListener{
+            if (it.isSuccessful) {
+                loadingDialog.dismissDialog() }
+            else
+            {
+                Log.i(TAG, "Ticket No creado")
+                loadingDialog.dismissDialog()
+            }
+        }
+    }
+
+    private fun updateTicket()
     {
         if( txtRegTicketDate.text.toString() == null || txtRegTicketDate.text.toString() == "" ||
             txtRegTicketAmount.text.toString() == null || txtRegTicketAmount.text.toString() == "" ||
@@ -230,6 +323,7 @@ class RegusterTicketActivity : AppCompatActivity()
 
             if (amount > 0)
             {
+                /*
                 val storage = FirebaseStorage.getInstance()
                 // Create a storage reference from our app
                 val storageRef = storage.reference
@@ -250,15 +344,34 @@ class RegusterTicketActivity : AppCompatActivity()
                     .build()
                 // Update metadata properties
                 forestRef.updateMetadata(metaData).addOnSuccessListener { updatedMetadata ->
-                    Log.i("dea_update_metadata", updatedMetadata.toString())
+                    Log.i(TAG, updatedMetadata.toString())
                 }.addOnFailureListener {
-                    Log.e("dea_update_metadata", it.toString())
+                    Log.e(TAG, it.toString())
                 }
+                 */
+                updateTicketBd(amount)
             }
             else
             {
                 Toast.makeText(this, "Ingresar monto mayor a cero", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun updateTicketBd(amount: Double)
+    {
+
+        val ticket = Ticket()
+        ticket.amount = amount
+
+        val hashMap = HashMap<String, String>().put(BdText.COL_AMOUNT, amount.toString())
+        val fbDB = FirebaseDatabase.getInstance().reference.child(BdText.TB_TICKETS).child(SLogin.getUserId()).child(ticketDisplay.id)
+
+        fbDB.updateChildren(ticket.toHashMap(Ticket.HM_AMOUNT) as Map<String, Any>).addOnCompleteListener{
+            if (it.isSuccessful)
+                Toast.makeText(this, "Ticket actualizado", Toast.LENGTH_LONG).show()
+            else
+                Toast.makeText(this, "Ticket NO actualizado", Toast.LENGTH_LONG).show()
         }
     }
 

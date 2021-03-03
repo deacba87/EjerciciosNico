@@ -17,38 +17,66 @@ class Ticket()
         val AMOUNT = "amount"
         val CREATED = "created"
         val CONTENT_TYPE = "image/jpg"
+        val HM_AMOUNT = "AMOUNT"
     }
 
     private val fileExtention = ".jpg"
 
-    var date: String? = null
-    var amount: Double? = 0.0
+    var id: String = ""
+    var userid: String = ""
+    var date: String = ""
+    var amount: Double = 0.0
     var photo: Bitmap? = null
-    var created: String? = null
+    var created: String = ""
     var context: Context? = null
-    var path: String? = null
+    var path: String = ""
     var url: String = ""
 
-    constructor(date: String, amount: Double, photo: Bitmap, created: String, context: Context): this()
+    constructor(date: String, amount: Double, photo: Bitmap, created: String, context: Context, userid: String): this()
     {
         this.date = date
         this.amount = amount
         this.photo = photo
         this.created = created
         this.context = context
+        this.userid = userid
     }
-    constructor(date: String?, amount: Double?, created: String?, path: String?, url: String): this()
+    constructor(id: String, date: String, amount: Double, created: String, path: String, url: String, userid: String): this()
+    {
+        this.id = id
+        this.date = date
+        this.amount = amount
+        this.created = created
+        this.path = path
+        this.url = url
+        this.userid = userid
+    }
+    /*constructor(date: String, amount: Double, created: String, path: String, url: String, userid: String): this()
     {
         this.date = date
         this.amount = amount
         this.created = created
         this.path = path
         this.url = url
+        this.userid = userid
+    }*/
+
+    fun resetData()
+    {
+        id = ""
+        userid = ""
+        date = ""
+        amount = 0.0
+        photo = null
+        created = ""
+        context = null
+        path = ""
+        url = ""
     }
 
     fun registerTicket(): Boolean
     {
-        val filePath = getFilePath() + getFileName()
+        val urlTemp = getFilePath() + getFileName()
         var storageRef = FirebaseStorage.getInstance().getReference();
 
         /*Metodo aparte para obtener el Byte array*/
@@ -64,7 +92,9 @@ class Ticket()
                     .setCustomMetadata(CREATED, created)
                     .build()
 
-            var uploadTask = storageRef!!.child(filePath).putBytes(data, metaData)
+            var uploadTask = storageRef!!.child(urlTemp).putBytes(data, metaData)
+            url = storageRef.child(urlTemp).toString()
+            path = storageRef.child(urlTemp).toString()
             uploadTask
                     .addOnFailureListener{
                         Toast.makeText(context, it.message.toString(), Toast.LENGTH_LONG).show()
@@ -72,6 +102,8 @@ class Ticket()
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful)
                         {
+                            val storageRef = FirebaseStorage.getInstance().reference;
+
                             Toast.makeText(context, "Ticket registrado", Toast.LENGTH_LONG).show()
                         }
                         else
@@ -114,6 +146,32 @@ class Ticket()
         return storageRef.child(getFilePath())
     }
 
+    fun toHashMap(typeMap: String): HashMap<String, String>
+    {
+
+        val hashMap = HashMap<String, String>()
+        with(hashMap)
+        {
+            when(typeMap)
+            {
+                HM_AMOUNT -> {
+                    put(BdText.COL_AMOUNT, amount.toString())
+                }
+                else ->
+                {
+                    put(BdText.COL_DATE, date)
+                    put(BdText.COL_AMOUNT, amount.toString())
+                    put(BdText.COL_IDUSER, userid)
+                    put(BdText.COL_CREATED, created)
+                    put(BdText.COL_PATH, path)
+                    put(BdText.COL_PHOTOURL, url)
+
+
+                }
+            }
+        }
+        return hashMap
+    }
 
 }
 

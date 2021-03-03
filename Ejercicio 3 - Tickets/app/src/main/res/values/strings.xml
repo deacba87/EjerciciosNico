@@ -26,6 +26,7 @@
     <string name="MODE_DISPLAY">DISPLAY</string>
     <string name="MODE_EDIT">EDIT</string>
     <string name="URL_IMG">URL_IMG</string>
+    <string name="ID_TICKET">ID_TICKET</string>
     <string name="TICKET_DATE">TICKET_DATE</string>
     <string name="TICKET_AMOUNT">TICKET_AMOUNT</string>
     <string name="TICKET_CREATED">TICKET_CREATED</string>

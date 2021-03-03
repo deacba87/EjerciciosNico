@@ -13,6 +13,10 @@ import com.google.firebase.storage.FirebaseStorage
 import android.widget.AdapterView.OnItemClickListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.R.string.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_history.*
 import java.lang.Exception
 import java.text.FieldPosition
@@ -20,6 +24,7 @@ import java.text.FieldPosition
 
  class HistoryActivity : AppCompatActivity()
 {
+    val TAG = "dea_HistoryActivity"
     /*
     private val MODE_EDIT: String = "EDIT"
     private val URL_IMG: String = "URL_IMG"
@@ -31,6 +36,7 @@ import java.text.FieldPosition
     */
 
     private var lstTicketsObject= mutableListOf<Ticket>()
+    //private var lstTickets: MutableList<Ticket>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +83,7 @@ import java.text.FieldPosition
 
     private fun loadHistoryTickets()
     {
-        val ticket = Ticket()
+        /*val ticket = Ticket()
         var childe = ticket.getTicketList()
 
         Toast.makeText(this, "Alona", Toast.LENGTH_SHORT).show()
@@ -108,9 +114,53 @@ import java.text.FieldPosition
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
-                }
+                }*/
+        getTicketsHistoryBd()
     }
-    private fun getTicketInfo(pUrl: String, pName: String)
+
+    private fun getTicketsHistoryBd()
+    {
+        val userTicketsBd = FirebaseDatabase.getInstance().getReference(BdText.TB_TICKETS).child(SLogin.getUserId())
+        userTicketsBd.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.i(TAG, "getTicketsHistoryBd -> onDataChange")
+                for (row in snapshot.children)
+                {
+                    Log.i(TAG, "onDataChange -> for (row in snapshot.children)")
+
+                    try {
+
+                        val a = row.child(BdText.COL_AMOUNT).value.toString()
+                        Log.i(TAG, "row.child(BdText.COL_AMOUNT).toString() = $a")
+                        val b = a.toDouble()
+                        Log.i(TAG, "toSDouble() = $b")
+                    }
+                    catch (e: Exception)
+                    {
+                        Log.i(TAG, "Exception = ${e.message}")
+                    }
+
+                    lstTicketsObject.add(Ticket(
+                            row.key.toString(),
+                            row.child(BdText.COL_DATE).value.toString(),
+                            row.child(BdText.COL_AMOUNT).value.toString().toDouble(),
+                            row.child(BdText.COL_CREATED).value.toString(),
+                            row.child(BdText.COL_PATH).value.toString() ,
+                            row.child(BdText.COL_PHOTOURL).value.toString(),
+                            row.child(BdText.COL_IDUSER).value.toString())
+                    )
+                }
+                Log.i(TAG, "onDataChange -> Fin for" )
+                rcv_history_tickets.adapter = HistoryTicketRowAdapter(lstTicketsObject)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.i(TAG, "Indra")
+            }
+        })
+    }
+
+    /*private fun getTicketInfo(pUrl: String, pName: String)
     {
         val storage = FirebaseStorage.getInstance()
         val gsReference = storage.reference.child(pName)
@@ -120,11 +170,10 @@ import java.text.FieldPosition
         var lstTicketsText = mutableListOf<String>()
 
         gsReference.metadata.addOnSuccessListener { metadata ->
-            val date = metadata.getCustomMetadata(Ticket.DATE)
-            val amount = metadata.getCustomMetadata(Ticket.AMOUNT)
-            val created = metadata.getCustomMetadata(Ticket.CREATED)
-
-            val ticket = Ticket(date, amount?.toDouble(), created, pName, pUrl )
+            val date = metadata.getCustomMetadata(Ticket.DATE).toString()
+            val amount = metadata.getCustomMetadata(Ticket.AMOUNT).toString()
+            val created = metadata.getCustomMetadata(Ticket.CREATED).toString()
+            val ticket = Ticket(date, amount?.toDouble(), created, pName, pUrl, SLogin.getUserId() )
 
             /*val texto = ticket.getStringData()
             lstTicketsText.add(texto)*/
@@ -137,5 +186,5 @@ import java.text.FieldPosition
         }.addOnFailureListener {
             Log.e("dea", it.toString())
         }
-    }
+    }*/
 }

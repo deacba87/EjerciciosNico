@@ -42,6 +42,7 @@ class HistoryTicketRowAdapter(val list: List<Ticket>): RecyclerView.Adapter<Hist
 
 class HistoryTicketRowHolder(val tView: View) : RecyclerView.ViewHolder(tView), View.OnClickListener
 {
+    val TAG = "deacba_HistoryTicketRowHolder"
     private var varView: View = tView
     private var ticketData: Ticket? = null
     init {
@@ -51,6 +52,7 @@ class HistoryTicketRowHolder(val tView: View) : RecyclerView.ViewHolder(tView), 
     fun setData(ticket: Ticket)
     {
         ticketData = ticket
+        Log.i(TAG, "setData: ${ticket.toString()}")
 
         tView.txt_htr_date?.text = "${tView.getString(R.string.fecha)}: ${ticket.date}"
 
@@ -69,6 +71,7 @@ class HistoryTicketRowHolder(val tView: View) : RecyclerView.ViewHolder(tView), 
                 with(intent)
                 {
                     putExtra(R.string.TYPEDISPLAY.toString(), R.string.MODE_EDIT.toString())
+                    putExtra(R.string.ID_TICKET.toString(), ticketData!!.id)
                     putExtra(R.string.URL_IMG.toString(), ticketData!!.url)
                     putExtra(R.string.TICKET_DATE.toString(), ticketData!!.date)
                     putExtra(R.string.TICKET_AMOUNT.toString(), ticketData!!.amount.toString())

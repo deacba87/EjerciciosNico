@@ -198,14 +198,11 @@ class ProfileActivity : AppCompatActivity()
         if (user!= null)
         {
             val fbDB = FirebaseDatabase.getInstance().reference.child(BdText.TB_USER).child(user!!.id)
-            fbDB.setValue(user!!.toHashMap()).addOnCompleteListener{
+            fbDB.updateChildren(user!!.toHashMap2(User.HM_NAME_PICTURE) as Map<String, Any>).addOnCompleteListener{
                 if (it.isSuccessful)
-                {
                     Toast.makeText(this, "Usuario actualizado", Toast.LENGTH_LONG).show()
-                }
                 else
                     Toast.makeText(this, "Usuario NO actualizado", Toast.LENGTH_LONG).show()
-
             }
         }
     }
